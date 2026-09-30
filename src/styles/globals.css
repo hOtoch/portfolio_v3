@@ -1,0 +1,1158 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-void);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    color: var(--color-text-hi);
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: var(--text-step-4);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: var(--text-step-3);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: var(--text-step-2);
+    line-height: 1.15;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Foco visivel em tudo que e focavel — design.md §11 */
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-magenta);
+    color: var(--color-void);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-magenta);
+  }
+}
+
+/* ==========================================================================
+   UTILITARIOS DE CENARIO — design.md §6
+   ========================================================================== */
+
+@layer components {
+  /* §6.1 — Texto em neon */
+  .neon {
+    color: #fff2f9;
+    text-shadow:
+      0 0 4px rgba(255, 255, 255, 0.65),
+      0 0 11px rgba(255, 45, 143, 0.85),
+      0 0 26px rgba(255, 45, 143, 0.55),
+      0 0 52px rgba(255, 45, 143, 0.3);
+  }
+
+  .neon-cyan {
+    color: #eefeff;
+    text-shadow:
+      0 0 4px rgba(255, 255, 255, 0.6),
+      0 0 11px rgba(43, 245, 255, 0.8),
+      0 0 26px rgba(43, 245, 255, 0.45);
+  }
+
+  /* §6.3 — Tubo de neon (borda acesa) */
+  .tube {
+    border: 1px solid var(--color-magenta);
+    box-shadow:
+      inset 0 0 8px rgba(255, 45, 143, 0.35),
+      0 0 10px rgba(255, 45, 143, 0.45),
+      0 0 34px rgba(255, 45, 143, 0.18);
+  }
+
+  /* §6.4 — Vidro sujo (card padrao) */
+  .panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+      var(--color-surface-1);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+    backdrop-filter: blur(10px) saturate(115%);
+  }
+
+  /* §6.5 — Canto chanfrado (HUD) */
+  .chamfer {
+    clip-path: polygon(
+      18px 0,
+      100% 0,
+      100% calc(100% - 18px),
+      calc(100% - 18px) 100%,
+      0 100%,
+      0 18px
+    );
+  }
+
+  /* §4.3 — Kicker */
+  .kicker {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
+
+  /* §6.9 — Reflexo molhado no asfalto */
+  .reflection {
+    transform: scaleY(-1);
+    filter: blur(3px) saturate(130%);
+    opacity: 0.28;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 70%);
+  }
+
+  /* Texto vazado usado nos letreiros e no marquee */
+  .outline-text {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-hairline-hi);
+  }
+}
+
+/* ==========================================================================
+   ANIMACOES
+   ========================================================================== */
+
+/* §6.2 — Flicker de placa (evento, nao loop constante) */
+@keyframes flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.35;
+  }
+  94% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.2;
+  }
+  97% {
+    opacity: 0.9;
+  }
+}
+
+/* §6.6 — Deslocamento do grao */
+@keyframes grain-shift {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-3%, 2%);
+  }
+  50% {
+    transform: translate(2%, -3%);
+  }
+  75% {
+    transform: translate(-2%, -2%);
+  }
+}
+
+/* §6.10 — Nevoa volumetrica (anima transform, nunca o blur) */
+@keyframes fog-drift-a {
+  0%,
+  100% {
+    transform: translate3d(-6%, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8%, -4%, 0) scale(1.12);
+  }
+}
+
+@keyframes fog-drift-b {
+  0%,
+  100% {
+    transform: translate3d(5%, 2%, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-7%, -3%, 0) scale(1);
+  }
+}
+
+/* Janelas acesas do skyline */
+@keyframes window-blink {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* Indicador de scroll */
+@keyframes scroll-dot {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(320%);
+    opacity: 0;
+  }
+}
+
+/* Marquee — §9.2 */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Ponto de status pulsante */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(43, 245, 176, 0.5);
+  }
+  50% {
+    opacity: 0.75;
+    box-shadow: 0 0 0 6px rgba(43, 245, 176, 0);
+  }
+}
+
+/* §9.4 — Trilha do pipeline que preenche conforme o scroll.
+   O ProcessoTrilha marca data-estado em cada etapa: "vem" (apagada, a
+   frente), "atual" (acabou de ser alcancada) e "feita" (acesa, atras). */
+
+.etapa-corpo,
+.etapa-marcador,
+.etapa-miolo,
+.etapa-numero {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-scene) var(--ease-out),
+    filter var(--dur-slow) var(--ease-out),
+    color var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out);
+}
+
+.etapa[data-estado="vem"] .etapa-corpo {
+  opacity: 0.22;
+  transform: translateX(28px);
+  filter: blur(3px);
+}
+
+.etapa[data-estado="vem"] .etapa-marcador {
+  transform: scale(0.7);
+}
+
+.etapa[data-estado="vem"] .etapa-miolo {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.etapa[data-estado="feita"] .etapa-corpo {
+  opacity: 0.72;
+}
+
+.etapa[data-estado="atual"] .etapa-marcador {
+  border-color: var(--color-magenta);
+  box-shadow:
+    0 0 0 6px rgba(255, 45, 143, 0.12),
+    0 0 22px rgba(255, 45, 143, 0.55);
+}
+
+.etapa[data-estado="atual"] .etapa-numero {
+  color: var(--color-magenta);
+}
+
+.etapa-cursor {
+  box-shadow:
+    0 0 10px rgba(255, 45, 143, 0.9),
+    0 0 24px rgba(255, 45, 143, 0.5);
+}
+
+/* Sem JS as etapas nunca seriam alcancadas: nascem acesas, trilha cheia. */
+@media (scripting: none) {
+  .etapa .etapa-corpo,
+  .etapa .etapa-marcador,
+  .etapa .etapa-miolo {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .etapa-cursor {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Revelacao no scroll — §7.2
+   O elemento nasce deslocado e opaco; o RevealObserver marca
+   data-revelado quando ele passa de 20% visivel. Dispara uma vez so.
+   ────────────────────────────────────────────────────────────────── */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+  transition-delay: var(--reveal-atraso, 0ms);
+}
+
+[data-reveal][data-revelado="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sem JS o conteudo nunca seria revelado: nasce visivel. */
+@media (scripting: none) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Setor 02 — vitrine rolada
+   data-estado: "vem" (abaixo) → "ativo" → "saiu" (acima). Rolando de
+   volta o caminho inverte sozinho. Quem sai vai rapido e sem cascata;
+   quem entra espera a saida e sobe em degraus (--ordem).
+   ────────────────────────────────────────────────────────────────── */
+
+.vitrine-aparelho,
+.vitrine-ficha > * {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-scene) var(--ease-out),
+    filter var(--dur-slow) var(--ease-out);
+}
+
+.vitrine-aparelho[data-estado="ativo"] {
+  transition-delay: 140ms;
+}
+
+.vitrine-aparelho[data-estado="vem"] {
+  opacity: 0;
+  transform: translateY(22%) scale(0.9) rotate(5deg);
+  filter: blur(6px);
+}
+
+.vitrine-aparelho[data-estado="saiu"] {
+  opacity: 0;
+  transform: translateY(-16%) scale(0.86) rotate(-5deg);
+  filter: blur(6px);
+}
+
+.vitrine-ficha[data-estado="ativo"] > * {
+  transition-delay: calc(200ms + var(--ordem, 0) * 70ms);
+}
+
+.vitrine-ficha:not([data-estado="ativo"]) > * {
+  opacity: 0;
+  transition-duration: var(--dur-base);
+}
+
+.vitrine-ficha[data-estado="vem"] > * {
+  transform: translateY(36px);
+}
+
+.vitrine-ficha[data-estado="saiu"] > * {
+  transform: translateY(-28px);
+}
+
+@media (scripting: none) {
+  .vitrine-aparelho,
+  .vitrine-ficha > * {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Cascata dentro de um bloco revelado — Setores 04, 05 e 06
+   Os filhos marcados com .entra esperam o [data-reveal] mais proximo
+   assentar e entram em degraus (--i). Variantes mudam so o ponto de
+   partida. Um [data-reveal] por grupo: aninhados disparariam juntos.
+   ────────────────────────────────────────────────────────────────── */
+
+.entra {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-scene) var(--ease-out),
+    filter var(--dur-slow) var(--ease-out);
+  transition-delay: calc(var(--reveal-atraso, 0ms) + 160ms + var(--i, 0) * 65ms);
+}
+
+.entra-esq {
+  transform: translateX(-22px);
+}
+
+.entra-dir {
+  transform: translateX(22px);
+}
+
+.entra-pop {
+  transform: scale(0.82);
+  filter: blur(4px);
+}
+
+[data-revelado="true"] .entra {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Filete de luz que corre a borda de cima de uma linha, uma vez */
+.varredura {
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--color-cyan) 45%, var(--color-magenta) 55%, transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+[data-revelado="true"] .varredura {
+  animation: varrer 1.3s var(--ease-out) calc(var(--reveal-atraso, 0ms) + 80ms) both;
+}
+
+@keyframes varrer {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Setor 05 — scanner que desce pelo retrato quando a ficha abre */
+.scanner {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 22%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(43, 245, 255, 0.16) 85%, rgba(43, 245, 255, 0.9));
+  opacity: 0;
+}
+
+[data-revelado="true"] .scanner {
+  animation: escanear 1.6s var(--ease-in-out) 250ms both;
+}
+
+@keyframes escanear {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(460%);
+  }
+}
+
+/* Setor 06 — o painel do formulario "liga": borda acende e apaga */
+.painel-liga {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  border: 1px solid var(--color-magenta);
+  box-shadow:
+    inset 0 0 40px rgba(255, 45, 143, 0.12),
+    0 0 30px rgba(255, 45, 143, 0.25);
+  opacity: 0;
+}
+
+[data-revelado="true"] .painel-liga {
+  animation: ligar 1.4s var(--ease-out) 200ms both;
+}
+
+@keyframes ligar {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  20% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (scripting: none) {
+  .entra {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Hero — retrato interativo
+   O RetratoInterativo escreve --mx/--my (0..1) e --ativo (0..1); tudo
+   abaixo e derivado delas. Sem JS ou com movimento reduzido ficam nos
+   valores de repouso e o retrato e o de sempre.
+   ────────────────────────────────────────────────────────────────── */
+
+.retrato-interativo {
+  --mx: 0.5;
+  --my: 0.5;
+  --ativo: 0;
+  perspective: 900px;
+  cursor: crosshair;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.retrato-inclina {
+  transform: rotateX(calc((0.5 - var(--my)) * 16deg)) rotateY(calc((var(--mx) - 0.5) * 18deg));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Parallax: a foto anda contra o ponteiro e cresce um pouco para a borda
+   nunca aparecer */
+.retrato-foto {
+  transform: translate3d(calc((0.5 - var(--mx)) * 18px), calc((0.5 - var(--my)) * 18px), 0)
+    scale(calc(1.05 + var(--ativo) * 0.04));
+}
+
+.retrato-reflexo {
+  opacity: var(--ativo);
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(
+      circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 45, 143, 0.14) 22%,
+      rgba(43, 245, 255, 0.06) 42%,
+      transparent 60%
+    ),
+    linear-gradient(
+      calc(100deg + var(--mx) * 40deg),
+      transparent 30%,
+      rgba(43, 245, 255, 0.1) 48%,
+      rgba(177, 75, 255, 0.12) 52%,
+      transparent 70%
+    );
+}
+
+.retrato-mira {
+  opacity: var(--ativo);
+}
+
+.retrato-mira-h,
+.retrato-mira-v {
+  position: absolute;
+  background: rgba(43, 245, 255, 0.28);
+}
+
+.retrato-mira-h {
+  inset-inline: 0;
+  top: calc(var(--my) * 100%);
+  height: 1px;
+}
+
+.retrato-mira-v {
+  inset-block: 0;
+  left: calc(var(--mx) * 100%);
+  width: 1px;
+}
+
+/* Colchetes do alvo: quatro cantos desenhados com gradientes */
+.retrato-mira-alvo {
+  position: absolute;
+  left: calc(var(--mx) * 100%);
+  top: calc(var(--my) * 100%);
+  width: 58px;
+  height: 58px;
+  translate: -50% -50%;
+  scale: calc(1.5 - var(--ativo) * 0.5);
+  --c: var(--color-cyan);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 12px 1px,
+    linear-gradient(var(--c), var(--c)) top left / 1px 12px,
+    linear-gradient(var(--c), var(--c)) top right / 12px 1px,
+    linear-gradient(var(--c), var(--c)) top right / 1px 12px,
+    linear-gradient(var(--c), var(--c)) bottom left / 12px 1px,
+    linear-gradient(var(--c), var(--c)) bottom left / 1px 12px,
+    linear-gradient(var(--c), var(--c)) bottom right / 12px 1px,
+    linear-gradient(var(--c), var(--c)) bottom right / 1px 12px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 4px rgba(43, 245, 255, 0.8));
+  animation: mira-gira 6s linear infinite;
+}
+
+/* Ponto central */
+.retrato-mira-alvo > span {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 4px;
+  height: 4px;
+  translate: -50% -50%;
+  border-radius: 999px;
+  background: var(--color-magenta);
+  box-shadow: 0 0 8px var(--color-magenta);
+}
+
+.retrato-mira-status {
+  animation: flicker 3s steps(1, end) infinite;
+}
+
+@keyframes mira-gira {
+  to {
+    rotate: 90deg;
+  }
+}
+
+/* Glitch no clique: fatias deslocadas + separacao de cor, meio segundo */
+.retrato-interativo[data-glitch] .retrato-foto {
+  animation: retrato-glitch 560ms steps(1, end);
+}
+
+.retrato-interativo[data-glitch] .retrato-reflexo {
+  animation: retrato-flash 560ms var(--ease-out);
+}
+
+@keyframes retrato-glitch {
+  0% {
+    clip-path: inset(12% 0 64% 0);
+    translate: -10px 0;
+    filter: hue-rotate(70deg) saturate(1.8) drop-shadow(4px 0 rgba(43, 245, 255, 0.7));
+  }
+  14% {
+    clip-path: inset(58% 0 18% 0);
+    translate: 12px 0;
+    filter: hue-rotate(-50deg) drop-shadow(-4px 0 rgba(255, 45, 143, 0.8));
+  }
+  28% {
+    clip-path: inset(0 0 0 0);
+    translate: 0 0;
+    filter: contrast(1.4) drop-shadow(3px 0 rgba(43, 245, 255, 0.6)) drop-shadow(-3px 0 rgba(255, 45, 143, 0.6));
+  }
+  42% {
+    clip-path: inset(34% 0 40% 0);
+    translate: -6px 0;
+    filter: invert(0.12) saturate(2);
+  }
+  56% {
+    clip-path: inset(0 0 0 0);
+    translate: 4px 0;
+    filter: drop-shadow(-2px 0 rgba(43, 245, 255, 0.5));
+  }
+  70%,
+  100% {
+    clip-path: none;
+    translate: 0 0;
+    filter: none;
+  }
+}
+
+@keyframes retrato-flash {
+  0% {
+    opacity: 1;
+    background-color: rgba(255, 45, 143, 0.25);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retrato-inclina,
+  .retrato-foto {
+    transform: none !important;
+  }
+
+  .retrato-reflexo,
+  .retrato-mira {
+    display: none;
+  }
+
+  .retrato-interativo {
+    cursor: auto;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Setor 01 — fachadas
+   ────────────────────────────────────────────────────────────────── */
+
+/* Filete do topo varre quando o card e revelado (o hover faz o mesmo) */
+[data-revelado="true"] .filete-fachada {
+  transform: scaleX(1);
+  transition-delay: var(--reveal-atraso, 0ms);
+}
+
+/* Bullets entrando como saida de terminal, depois do card assentar */
+.bullet-terminal {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+  transition-delay: var(--bullet-atraso, 0ms);
+}
+
+[data-revelado="true"] .bullet-terminal {
+  opacity: 1;
+  transform: none;
+}
+
+/* Foco na fachada: passar o mouse em uma apaga as outras.
+   Mira no <article>, nao no <li>: o shorthand `transition` aqui tem
+   especificidade maior que [data-reveal] e zerava o transition-delay da
+   revelacao, matando a cascata e a subida de 24px. */
+.rua-de-neon:has(> li:hover) > li:not(:hover) > article {
+  opacity: 0.55;
+}
+
+.rua-de-neon > li > article {
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+/* Fachada acendendo: nao e um fade, e um tubo de neon ligando.
+   Vira animacao (nao transicao) para caber a hesitacao no meio do caminho. */
+@keyframes acende-fachada {
+  0% {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  30% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  38% {
+    opacity: 0.12;
+  }
+  48% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.3;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-reveal].fachada {
+  transition: none;
+}
+
+[data-reveal].fachada[data-revelado="true"] {
+  animation: acende-fachada 700ms var(--ease-out) var(--reveal-atraso, 0ms) both;
+}
+
+/* Glifos com vida propria — um movimento por servico */
+@keyframes glifo-pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes glifo-giro {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glifo-respira {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.glifo-web { animation: glifo-pulso 4s var(--ease-in-out) infinite; }
+.glifo-rpa { animation: glifo-giro 8s linear infinite; }
+.glifo-ia { animation: glifo-respira 3s var(--ease-in-out) infinite; }
+
+/* ──────────────────────────────────────────────────────────────────
+   Progresso do scroll e parallax do cenario — §7.2
+   Tudo em scroll-driven animation: sem listener de scroll em JS.
+   ────────────────────────────────────────────────────────────────── */
+
+@keyframes progresso-scroll {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes parallax-fundo {
+  to { transform: translateY(var(--parallax, 12%)); }
+}
+
+.barra-progresso {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@supports (animation-timeline: scroll()) {
+  .barra-progresso {
+    animation: progresso-scroll linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  [data-parallax] {
+    animation: parallax-fundo linear both;
+    animation-timeline: view(block);
+    animation-range: contain 0% cover 100%;
+    will-change: transform;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Chuva e relampago — §6.11
+   Vindos do componente rain.tsx. Ficam aqui em vez de <style jsx> porque
+   no App Router o styled-jsx exigiria um StyleRegistry no layout.
+   ────────────────────────────────────────────────────────────────── */
+
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(calc(100vh + 20px));
+  }
+}
+
+/* Limite de 3 flashes por segundo — WCAG 2.3.1. Os keyframes originais
+   piscavam ~8x/s dentro de 150ms; aqui e um clarao com uma repicada so. */
+@keyframes lightning-flash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  38% { opacity: 0.35; }
+  55% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes lightning-bolt {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  35% { opacity: 0.5; }
+  55% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+.animate-rain-fall {
+  animation: rain-fall linear infinite;
+  will-change: transform;
+}
+
+.animate-lightning-flash {
+  animation: lightning-flash ease-out forwards;
+}
+
+.animate-lightning-bolt {
+  animation: lightning-bolt ease-out forwards;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Letreiro do nome — §7.2
+   Sequencia: decodificacao (JS troca os caracteres) → tubo acendendo
+   (transicao de color/text-shadow) → pisca raro em duas letras.
+   ────────────────────────────────────────────────────────────────── */
+
+.letra {
+  display: inline-block;
+  color: #4a3550; /* tubo apagado */
+  text-shadow: none;
+  transition:
+    color 200ms var(--ease-out),
+    text-shadow 300ms var(--ease-out);
+}
+
+/* Estado final: sem JS, com movimento reduzido ou depois de acender */
+.letra[data-acesa="true"] {
+  color: var(--color-text-hi);
+}
+
+.letra--neon[data-acesa="true"] {
+  color: #fff2f9;
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.65),
+    0 0 11px rgba(255, 45, 143, 0.85),
+    0 0 26px rgba(255, 45, 143, 0.55),
+    0 0 52px rgba(255, 45, 143, 0.3);
+}
+
+/* Falha ao acender: a letra hesita antes de firmar */
+@keyframes falha-ao-acender {
+  0%, 100% { opacity: 1; }
+  18% { opacity: 0.15; }
+  26% { opacity: 1; }
+  44% { opacity: 0.3; }
+  52% { opacity: 1; }
+  70% { opacity: 0.5; }
+}
+
+.letra[data-falha="true"][data-acesa="true"] {
+  animation: falha-ao-acender 620ms steps(1, end) 1;
+}
+
+/* Pisca raro depois que tudo acendeu — evento, nunca loop visivel (§6.2).
+   A janela de falha ocupa ~1,6% do ciclo: ~220ms a cada 14s. */
+@keyframes pisca-letra {
+  0%, 96.4%, 100% { opacity: 1; }
+  96.8% { opacity: 0.25; }
+  97.1% { opacity: 1; }
+  97.6% { opacity: 0.4; }
+  98% { opacity: 1; }
+}
+
+.letra[data-vive="true"] {
+  animation: pisca-letra var(--pisca-dur, 14s) steps(1, end) var(--pisca-atraso, 4s) infinite;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Farol passando pelo retrato — §9.1
+   Fica parado 86% do ciclo e atravessa em ~1,2s. So transform/opacity.
+   ────────────────────────────────────────────────────────────────── */
+@keyframes farol {
+  0%, 86% {
+    transform: translateX(-130%) skewX(-18deg);
+    opacity: 0;
+  }
+  89% {
+    opacity: 0.5;
+  }
+  97% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(240%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+/* Revelacao de entrada — §7.2 */
+/* ──────────────────────────────────────────────────────────────────
+   Abertura — cortina de glitch no carregamento
+   A cortina some sozinha pelo CSS: se o JS falhar, o site nao trava.
+   --abertura e o instante em que ela comeca a subir; o hero soma esse
+   valor aos proprios atrasos para a entrada acontecer a vista.
+   ────────────────────────────────────────────────────────────────── */
+
+:root {
+  --abertura: 1200ms;
+}
+
+@keyframes abertura-sai {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.abertura {
+  animation: abertura-sai 400ms var(--ease-out) var(--abertura) forwards;
+}
+
+@keyframes glitch-clip-1 {
+  0% { clip-path: inset(40% 0 61% 0); transform: translate(calc(-2px * var(--translate-scale)), calc(-1px * var(--translate-scale))); }
+  20% { clip-path: inset(92% 0 1% 0); transform: translate(calc(1px * var(--translate-scale)), calc(2px * var(--translate-scale))); }
+  40% { clip-path: inset(43% 0 1% 0); transform: translate(calc(-1px * var(--translate-scale)), calc(3px * var(--translate-scale))); }
+  60% { clip-path: inset(25% 0 58% 0); transform: translate(calc(3px * var(--translate-scale)), calc(-1px * var(--translate-scale))); }
+  80% { clip-path: inset(54% 0 7% 0); transform: translate(calc(-2px * var(--translate-scale)), calc(2px * var(--translate-scale))); }
+  100% { clip-path: inset(58% 0 43% 0); transform: translate(calc(2px * var(--translate-scale)), calc(-2px * var(--translate-scale))); }
+}
+
+@keyframes glitch-clip-2 {
+  0% { clip-path: inset(65% 0 13% 0); transform: translate(calc(2px * var(--translate-scale)), calc(1px * var(--translate-scale))); }
+  20% { clip-path: inset(79% 0 14% 0); transform: translate(calc(-3px * var(--translate-scale)), 0px); }
+  40% { clip-path: inset(32% 0 52% 0); transform: translate(calc(1px * var(--translate-scale)), calc(-2px * var(--translate-scale))); }
+  60% { clip-path: inset(8% 0 76% 0); transform: translate(calc(-1px * var(--translate-scale)), calc(3px * var(--translate-scale))); }
+  80% { clip-path: inset(71% 0 2% 0); transform: translate(calc(3px * var(--translate-scale)), calc(1px * var(--translate-scale))); }
+  100% { clip-path: inset(15% 0 62% 0); transform: translate(calc(-2px * var(--translate-scale)), calc(-1px * var(--translate-scale))); }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Setor 02 — carrossel de celulares
+   ────────────────────────────────────────────────────────────────── */
+
+.carrossel-tela {
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    opacity var(--dur-slow) var(--ease-out);
+  will-change: transform;
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* "Acender" do titulo — §7.2 */
+@keyframes ignite {
+  from {
+    opacity: 0;
+    text-shadow: none;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   REDUCAO DE MOVIMENTO — design.md §7.3 (obrigatorio)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Carrossel troca de tela sem deslizar */
+  .carrossel-tela {
+    transition: none;
+  }
+
+  /* Sem cortina: o site aparece direto, e o hero nao espera por ela */
+  :root {
+    --abertura: 0ms;
+  }
+
+  .abertura {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-fx="grain"],
+  [data-fx="rain"],
+  [data-fx="fog"],
+  [data-fx="farol"] {
+    display: none !important;
+  }
+
+  /* Conteudo nasce visivel: sem revelacao, sem cascata, sem parallax */
+  [data-reveal],
+  [data-reveal].fachada[data-revelado="true"],
+  .bullet-terminal,
+  .entra {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+
+  .varredura,
+  .scanner,
+  .painel-liga {
+    display: none !important;
+  }
+
+  .glifo-web,
+  .glifo-rpa,
+  .glifo-ia,
+  [data-parallax],
+  .barra-progresso {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rua-de-neon:has(> li:hover) > li:not(:hover) {
+    opacity: 1;
+  }
+
+  /* O nome nasce aceso: sem decodificacao, sem cascata, sem pisca */
+  .letra {
+    color: var(--color-text-hi);
+    transition: none;
+  }
+  .letra--neon {
+    color: #fff2f9;
+    text-shadow:
+      0 0 4px rgba(255, 255, 255, 0.65),
+      0 0 11px rgba(255, 45, 143, 0.85),
+      0 0 26px rgba(255, 45, 143, 0.55);
+  }
+}

@@ -1,0 +1,109 @@
+/* ==========================================================================
+   TOKENS — Night City
+   Fonte: design.md §3 (cor), §4 (tipografia), §5 (layout), §7 (movimento)
+   Nao adicione valor literal fora daqui. Tudo no app consome estes tokens.
+   ========================================================================== */
+
+@theme {
+  /* ── Base / Superficies ─────────────────────────────────────────────── */
+  --color-void: #07060d;
+  --color-asphalt: #0b0a12;
+  --color-surface-1: #110f1b;
+  --color-surface-2: #191527;
+  --color-surface-3: #221c33;
+  --color-hairline: #2e2740;
+  --color-hairline-hi: #453a63;
+
+  /* ── Texto ──────────────────────────────────────────────────────────── */
+  --color-text-hi: #f5f2ff;
+  --color-text: #cac3df;
+  --color-text-dim: #8e86a8;
+  --color-text-mute: #807a9e; /* 4.87:1 sobre --asphalt — ver design.md §11 */
+
+  /* ── Neon de marca ──────────────────────────────────────────────────── */
+  --color-magenta: #ff2d8f;
+  --color-violet: #b14bff;
+  --color-crimson: #ff3355;
+
+  /* ── Acentos de sinalizacao (uso <= 5% da tela) ─────────────────────── */
+  --color-cyan: #2bf5ff;
+  --color-sodium: #ff9f4a;
+
+  /* ── Semanticos ─────────────────────────────────────────────────────── */
+  --color-ok: #2bf5b0;
+  --color-warn: #ffc53d;
+  --color-error: #ff3355;
+
+  /* ── Tipografia ─────────────────────────────────────────────────────── */
+  --font-display: var(--font-chakra), "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter-tight), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Escala fluida — design.md §4.2 */
+  --text-step--1: clamp(0.8rem, 0.77rem + 0.15vw, 0.88rem);
+  --text-step-0: clamp(1rem, 0.95rem + 0.25vw, 1.13rem);
+  --text-step-1: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-step-2: clamp(1.6rem, 1.4rem + 1vw, 2.25rem);
+  --text-step-3: clamp(2.1rem, 1.7rem + 2vw, 3.5rem);
+  --text-step-4: clamp(2.6rem, 1.7rem + 4.2vw, 5.25rem);
+  --text-step-5: clamp(3.5rem, 1.5rem + 9vw, 11rem);
+
+  /* ── Raio ───────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --spacing-gutter: clamp(1.25rem, 4vw, 3rem);
+  --spacing-section: clamp(6rem, 12vh, 10rem);
+  /* Nao chame de --spacing-block: no Tailwind v4 todo token --spacing-X gera o
+     utilitario inline-X (inline-size). "block" virava a classe .inline-block,
+     que alem de display ganhava inline-size: 55px e espremia tudo que a usava. */
+  --spacing-bloco: clamp(3rem, 6vh, 5rem);
+  --container-site: 1280px;
+
+  /* ── Movimento — design.md §7.1 ─────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Gradientes — design.md §3.2 */
+  --grad-brand: linear-gradient(100deg, #ff2d8f 0%, #b14bff 55%, #6a2bff 100%);
+  --grad-heat: linear-gradient(100deg, #ff9f4a 0%, #ff3355 50%, #ff2d8f 100%);
+  --grad-sky: radial-gradient(
+    120% 80% at 50% 100%,
+    rgba(177, 75, 255, 0.28) 0%,
+    rgba(255, 45, 143, 0.12) 35%,
+    transparent 70%
+  );
+  --grad-fade: linear-gradient(180deg, transparent, var(--color-asphalt) 85%);
+
+  /* Brilhos */
+  --glow-magenta: 0 0 12px rgba(255, 45, 143, 0.55), 0 0 38px rgba(255, 45, 143, 0.22);
+  --glow-violet: 0 0 12px rgba(177, 75, 255, 0.55), 0 0 38px rgba(177, 75, 255, 0.22);
+  --glow-cyan: 0 0 10px rgba(43, 245, 255, 0.5), 0 0 30px rgba(43, 245, 255, 0.18);
+
+  /* Elevacao — sombra real, nao brilho */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-2: 0 8px 24px -8px rgba(0, 0, 0, 0.8);
+  --shadow-3: 0 24px 64px -16px rgba(0, 0, 0, 0.9);
+
+  /* Duracoes */
+  --dur-fast: 140ms;
+  --dur-base: 260ms;
+  --dur-slow: 520ms;
+  --dur-scene: 900ms;
+
+  /* Camadas — design.md §5.4 */
+  --z-bg: 0;
+  --z-content: 10;
+  --z-sticky: 20;
+  --z-overlay: 30;
+  --z-fx: 40;
+  --z-cursor: 50;
+}
