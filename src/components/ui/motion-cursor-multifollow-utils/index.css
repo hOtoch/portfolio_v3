@@ -1,0 +1,31 @@
+/*
+ * Estilos do motion-cursor-multifollow — o componente original importa este
+ * arquivo, mas ele não veio junto; aqui está a versão para o site inteiro.
+ */
+
+/* Camada fixa sobre a página: não recebe clique nem rolagem */
+.cursor-stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor, 50);
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.cursor-stage[data-visible="true"] {
+  opacity: 1;
+}
+
+/* Com o cursor custom montado, o nativo some — menos em campos de texto,
+   onde o I-beam indica onde clicar para digitar. */
+html.cursor-custom,
+html.cursor-custom * {
+  cursor: none !important;
+}
+
+html.cursor-custom input:not([type="button"], [type="submit"], [type="checkbox"], [type="radio"]),
+html.cursor-custom textarea {
+  cursor: text !important;
+}
