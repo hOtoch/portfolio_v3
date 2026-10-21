@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { vitrines, type Vitrine } from "@/content/projetos";
-import { servicos } from "@/content/site";
 import { Button } from "@/components/ui/Button";
 import { PhoneFrame } from "@/components/ui/PhoneFrame";
 import { cn } from "@/lib/utils";
@@ -26,10 +25,17 @@ import { cn } from "@/lib/utils";
 
 type Estado = "vem" | "ativo" | "saiu";
 
+/**
+ * Faixa de sites de cliente: cor fixa em magenta.
+ *
+ * v4 — antes a cor vinha do servico do projeto. Servico deixou de existir, e
+ * esta faixa e so de web, entao o tema e um so.
+ */
 const TEMA = {
-  web: { texto: "text-magenta", marcador: "text-magenta", barra: "bg-magenta", brilho: "rgba(255,45,143,.42)" },
-  rpa: { texto: "text-violet", marcador: "text-violet", barra: "bg-violet", brilho: "rgba(177,75,255,.42)" },
-  ia: { texto: "text-crimson", marcador: "text-crimson", barra: "bg-crimson", brilho: "rgba(255,51,85,.42)" },
+  texto: "text-magenta",
+  marcador: "text-magenta",
+  barra: "bg-magenta",
+  brilho: "rgba(255,45,143,.42)",
 } as const;
 
 /** Rolagem, em svh, que cada projeto ocupa na trilha presa. */
@@ -105,7 +111,7 @@ function Palco() {
     window.scrollTo({ top: topo + percurso * ((alvo + 0.5) / total), behavior: "smooth" });
   };
 
-  const tema = TEMA[vitrines[ativo].servico];
+  const tema = TEMA;
 
   return (
     <div ref={trilha} className="relative" style={{ height: `calc(${total} * ${TRECHO_SVH}svh + 100svh)` }}>
@@ -158,7 +164,7 @@ function Aparelhos({
   aoEscolher: (i: number) => void;
   className?: string;
 }) {
-  const tema = TEMA[vitrines[ativo].servico];
+  const tema = TEMA;
 
   return (
     <div className={cn("relative mx-auto aspect-[390/844] select-none", className)}>
@@ -195,7 +201,7 @@ function Aparelhos({
             <PhoneFrame
               src={vitrine.telas[0].src}
               alt={vitrine.telas[0].alt}
-              brilho={frente ? TEMA[vitrine.servico].brilho : undefined}
+              brilho={frente ? TEMA.brilho : undefined}
               className="h-full"
             />
           </div>
@@ -339,8 +345,7 @@ function Ficha({
   inerte?: boolean;
   className?: string;
 }) {
-  const servico = servicos.find((s) => s.id === vitrine.servico)!;
-  const tema = TEMA[vitrine.servico];
+  const tema = TEMA;
   // Cada filho entra um passo depois do anterior (--ordem no CSS).
   const ordem = (n: number) => ({ "--ordem": n }) as React.CSSProperties;
 
@@ -351,7 +356,7 @@ function Ficha({
         className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[0.68rem] tracking-[0.14em] text-text-mute uppercase"
       >
         <span>[ {String(indice + 1).padStart(2, "0")} ]</span>
-        <span className={tema.texto}>{servico.codinome}</span>
+        <span className={tema.texto}>Site no ar</span>
       </p>
 
       <h3 style={ordem(1)} className="mt-5 text-[length:var(--text-step-3)]">

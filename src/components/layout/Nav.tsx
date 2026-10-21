@@ -104,7 +104,7 @@ export function Nav() {
 
         <div className="hidden md:block">
           <Button href="#contato" className="px-5 py-2.5 text-xs">
-            Abrir contrato
+            Falar comigo
           </Button>
         </div>
 
@@ -150,7 +150,7 @@ export function Nav() {
           </ul>
           <div className="mt-12">
             <Button href="#contato" onClick={() => setAberto(false)}>
-              Abrir contrato
+              Falar comigo
             </Button>
           </div>
         </div>

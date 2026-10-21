@@ -1,7 +1,33 @@
 # DESIGN.md — Portfólio "Night City"
 
-> Direção de arte + sistema de design do portfólio de **Hugo Otoch** — desenvolvedor fullstack
-> e engenheiro de IA atuando como freelancer.
+> ## ⚠ Este documento está atrasado em relação ao site (v4)
+>
+> O site foi repositionado de **portfólio de freelancer** para **candidatura a vaga de
+> Engenheiro de IA (pleno)**. A direção de arte continua valendo inteira — paleta, grão,
+> scanline, neon, camadas, tipografia, movimento. O que **não** vale mais é tudo que trata o
+> visitante como cliente.
+>
+> **Superado por `src/content/`, que é a fonte de verdade atual:**
+>
+> | Seção deste doc | O que mudou na v4 |
+> |---|---|
+> | §0 Identidade | Título agora é "Engenheiro de IA · Pleno". Ver `src/content/site.ts`. |
+> | §1.2 Posicionamento | O leitor-alvo é recrutador técnico e tech lead, não cliente. Nada de escopo, prazo ou preço. |
+> | §1.4 Três serviços | Deixaram de ser serviços à venda e viraram **eixos de atuação**: `AGENT//CORE`, `LLM//OPS`, `SHIP//PROD`. A tripla cor/glifo/codinome continua a mesma mecânica. `WEB//CRAFT` foi aposentado. |
+> | §9.2 Setor 01 | "Rua de neon" agora é *Onde eu atuo* (`#atuacao`), e o botão leva à prova, não ao orçamento. |
+> | §9.3 Setor 02 | O grid principal é de **cases** com página própria (`/projetos/[slug]`), não de links. Projeto sem demo pública declara o status na etiqueta. |
+> | §9.4 Setor 03 | O **PIPELINE** comercial (Briefing → Deploy) foi removido. No lugar entrou o setor **PERCURSO**, com a trilha da trajetória em dois trilhos. |
+> | §9.5 Arsenal | Reordenado: `IA & Agentes` primeiro, `Frontend` por último. Cada grupo ganhou `nota` de profundidade. |
+> | §9.7 Contratos | Virou **Contato**. Sem faixa de orçamento, sem garantias comerciais, sem WhatsApp. No lugar: currículo em PDF e ficha de contratação. |
+> | §17 Inventário | Continua valendo como **regra** (nada no site que não seja verificável), mas o conteúdo em si mora em `src/content/`. |
+>
+> Regra que não mudou e segue acima de tudo: **nada no site pode afirmar algo que não esteja
+> verificável em `src/content/`.** Número só entra quando foi medido.
+
+
+> Direção de arte + sistema de design do portfólio de **Hugo Otoch**.
+> (Descrição original, da v3: "desenvolvedor fullstack e engenheiro de IA atuando como
+> freelancer" — ver o aviso acima.)
 > Fonte única de verdade para quem (pessoa ou agente de IA) for implementar, estender ou revisar o site.
 
 ## 0. Identidade — dados reais

@@ -3,7 +3,6 @@ import { Chakra_Petch, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { site } from "@/content/site";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
-import { Abertura } from "@/components/layout/Abertura";
 import { Grain } from "@/components/fx/Grain";
 import { Scanlines } from "@/components/fx/Scanlines";
 import { CursorMultifollow } from "@/components/ui/motion-cursor-multifollow";
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: `${site.nome} — ${site.titulo}`,
   description:
-    "Sites e landing pages, automações RPA e agentes de IA. Engenheiro de computação (UFES) com 4 anos construindo sistemas em produção. Vitória/ES e remoto.",
+    "Engenheiro de IA pleno: agentes, LLMs e automação em produção, com o backend que sustenta. Engenharia de Computação pela UFES. Vitória/ES e remoto.",
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -57,7 +56,10 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-/* design.md §13.4 — JSON-LD Person + ProfessionalService */
+/* design.md §13.4 — JSON-LD.
+   v4: saiu o no ProfessionalService (negocio que vende servico) — sinal errado
+   para quem busca vaga. Ficou so Person, com formacao, idiomas e o cargo que
+   esta sendo procurado. */
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -65,7 +67,7 @@ const jsonLd = {
       "@type": "Person",
       name: site.nome,
       alternateName: site.nomeCompleto,
-      jobTitle: site.titulo,
+      jobTitle: `${site.titulo} ${site.nivel}`,
       email: `mailto:${site.email}`,
       url: site.url,
       alumniOf: {
@@ -80,26 +82,32 @@ const jsonLd = {
       },
       sameAs: [site.github, site.linkedin],
       knowsAbout: [
-        "Python",
-        "Django",
-        "Next.js",
+        "Agentes de IA",
         "LangChain",
         "LangGraph",
         "RAG",
-        "RPA",
-        "Selenium",
+        "Engenharia de Prompt",
+        "Integração de LLMs",
+        "Python",
+        "Django",
         "Celery",
         "Docker",
         "PostgreSQL",
       ],
-    },
-    {
-      "@type": "ProfessionalService",
-      name: site.nome,
-      description: site.lead,
-      url: site.url,
-      areaServed: "BR",
-      serviceType: ["Desenvolvimento web", "Automação RPA", "Agentes de IA"],
+      knowsLanguage: [
+        { "@type": "Language", name: "Português" },
+        { "@type": "Language", name: "Inglês" },
+      ],
+      hasCredential: {
+        "@type": "EducationalOccupationalCredential",
+        credentialCategory: "Bacharelado",
+        name: "Engenharia de Computação",
+        educationalLevel: "Bachelor's degree",
+      },
+      seeks: {
+        "@type": "Demand",
+        name: `Vaga de ${site.titulo} ${site.nivel}`,
+      },
     },
   ],
 };
@@ -136,7 +144,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Scanlines />
         <CursorMultifollow />
         <RevealObserver />
-        <Abertura />
 
         <script
           type="application/ld+json"

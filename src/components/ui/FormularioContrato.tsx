@@ -1,14 +1,16 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useId } from "react";
 import { enviarContrato } from "@/app/actions/contato";
 import { ESTADO_INICIAL } from "@/lib/contato-tipos";
-import { faixasOrcamento, servicos } from "@/content/site";
 
 /**
  * design.md §8.5 — "Terminal de contrato".
  * Labels em mono com prefixo `>`, caret piscante no foco, erro sempre com
  * icone + texto (nunca so cor).
+ *
+ * v4 — saiu o que era de venda (tipo de servico e faixa de orcamento) e entrou
+ * `empresa`, opcional. Quem escreve aqui agora e recrutador, nao cliente.
  */
 
 const CAMPO =
@@ -44,7 +46,6 @@ function Erro({ children }: { children: React.ReactNode }) {
 
 export function FormularioContrato() {
   const [estado, acao, pendente] = useActionState(enviarContrato, ESTADO_INICIAL);
-  const [orcamento, setOrcamento] = useState<string>(faixasOrcamento[3]);
   const id = useId();
 
   if (estado.status === "ok") {
@@ -59,7 +60,7 @@ export function FormularioContrato() {
           className="absolute inset-x-0 top-0 h-0.5 bg-cyan"
           style={{ boxShadow: "var(--glow-cyan)" }}
         />
-        <p className="kicker text-cyan">Contrato recebido</p>
+        <p className="kicker text-cyan">Mensagem recebida</p>
         <p className="mt-4 font-mono text-sm text-text">
           Resposta em até 24h no canal que você deixou.
         </p>
@@ -73,13 +74,13 @@ export function FormularioContrato() {
       <span aria-hidden="true" className="painel-liga" />
       {/* Honeypot — invisivel para gente, irresistivel para bot */}
       <div aria-hidden="true" className="absolute -left-[9999px]">
-        <label htmlFor={`${id}-empresa`}>Não preencha este campo</label>
-        <input id={`${id}-empresa`} name="empresa_site" tabIndex={-1} autoComplete="off" />
+        <label htmlFor={`${id}-isca`}>Não preencha este campo</label>
+        <input id={`${id}-isca`} name="url_referencia" tabIndex={-1} autoComplete="off" />
       </div>
 
       <div className="entra grid gap-6 sm:grid-cols-2" style={ordem(1)}>
         <div>
-          <Rotulo htmlFor={`${id}-nome`}>nome_do_contratante</Rotulo>
+          <Rotulo htmlFor={`${id}-nome`}>seu_nome</Rotulo>
           <input
             id={`${id}-nome`}
             name="nome"
@@ -110,62 +111,21 @@ export function FormularioContrato() {
       </div>
 
       <div className="entra mt-6" style={ordem(2)}>
-        <Rotulo htmlFor={`${id}-servico`}>tipo_de_servico</Rotulo>
-        <select
-          id={`${id}-servico`}
-          name="servico"
-          required
-          defaultValue={servicos[0].codinome}
+        <Rotulo htmlFor={`${id}-empresa`}>empresa_ou_time (opcional)</Rotulo>
+        <input
+          id={`${id}-empresa`}
+          name="empresa"
+          maxLength={160}
+          autoComplete="organization"
           className={CAMPO}
-          aria-invalid={estado.campo === "servico"}
-        >
-          {servicos.map((s) => (
-            <option key={s.id} value={s.codinome} className="bg-surface-2">
-              {s.codinome} — {s.nome}
-            </option>
-          ))}
-        </select>
-        {estado.campo === "servico" && <Erro>{estado.mensagem}</Erro>}
+          placeholder="De onde você fala"
+          aria-invalid={estado.campo === "empresa"}
+        />
+        {estado.campo === "empresa" && <Erro>{estado.mensagem}</Erro>}
       </div>
 
-      <fieldset className="entra mt-6" style={ordem(3)}>
-        <legend className="mb-2 flex items-center gap-2 font-mono text-xs tracking-[0.08em] text-text-dim">
-          <span aria-hidden="true" className="text-cyan">
-            &gt;
-          </span>
-          orcamento
-        </legend>
-        <input type="hidden" name="orcamento" value={orcamento} />
-        <div className="flex flex-wrap gap-2">
-          {faixasOrcamento.map((faixa) => {
-            const ativo = faixa === orcamento;
-            return (
-              <button
-                key={faixa}
-                type="button"
-                onClick={() => setOrcamento(faixa)}
-                aria-pressed={ativo}
-                className={`rounded-sm border px-4 py-2 font-mono text-xs transition-colors duration-[--dur-fast] ${
-                  ativo
-                    ? "border-magenta bg-[rgba(255,45,143,.1)] text-text-hi"
-                    : "border-hairline bg-surface-3 text-text-dim hover:border-hairline-hi hover:text-text-hi"
-                }`}
-              >
-                {ativo && (
-                  <span aria-hidden="true" className="mr-2 text-magenta">
-                    ▸
-                  </span>
-                )}
-                {faixa}
-              </button>
-            );
-          })}
-        </div>
-        {estado.campo === "orcamento" && <Erro>{estado.mensagem}</Erro>}
-      </fieldset>
-
-      <div className="entra mt-6" style={ordem(4)}>
-        <Rotulo htmlFor={`${id}-briefing`}>briefing</Rotulo>
+      <div className="entra mt-6" style={ordem(3)}>
+        <Rotulo htmlFor={`${id}-briefing`}>mensagem</Rotulo>
         <textarea
           id={`${id}-briefing`}
           name="briefing"
@@ -173,7 +133,7 @@ export function FormularioContrato() {
           rows={5}
           maxLength={4000}
           className={`${CAMPO} resize-y`}
-          placeholder="Qual é o problema? O que precisa estar funcionando no fim?"
+          placeholder="A vaga, o time e o que vocês precisam resolver"
           aria-invalid={estado.campo === "briefing"}
         />
         {estado.campo === "briefing" && <Erro>{estado.mensagem}</Erro>}
@@ -187,7 +147,7 @@ export function FormularioContrato() {
       )}
 
       {/* .entra fica no invólucro: no botão, anularia o hover que o levanta */}
-      <div className="entra mt-8" style={ordem(5)}>
+      <div className="entra mt-8" style={ordem(4)}>
         <button
           type="submit"
           disabled={pendente}
@@ -202,7 +162,7 @@ export function FormularioContrato() {
               Processando...
             </>
           ) : (
-            "Enviar contrato"
+            "Enviar mensagem"
           )}
         </button>
       </div>

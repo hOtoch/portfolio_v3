@@ -1,24 +1,21 @@
-import { canais, garantias, site } from "@/content/site";
+import { canais, contratacao, site } from "@/content/site";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FormularioContrato } from "@/components/ui/FormularioContrato";
 
 /**
- * design.md §9.7 — Setor 06 // CONTRATOS.
+ * design.md §9.7 — Setor 06 // CONTATO.
  * Entrada: o painel do formulário "liga" (borda pisca e acende) e os campos
- * sobem em sequência; os canais deslizam da direita e as garantias em seguida.
+ * sobem em sequência; os canais deslizam da direita e a ficha em seguida.
+ *
+ * v4 — saiu o WhatsApp (canal de cliente) e saíram as garantias comerciais.
+ * No lugar entram o currículo em PDF e a ficha de contratação: nível,
+ * modalidade, local e idioma, que é o que o recrutador precisa conferir.
  */
 export function Contato() {
-  const canaisVisiveis = site.whatsapp
-    ? [
-        ...canais.slice(0, 1),
-        {
-          rotulo: "WhatsApp",
-          valor: site.whatsapp,
-          href: `https://wa.me/${site.whatsapp.replace(/\D/g, "")}`,
-        },
-        ...canais.slice(1),
-      ]
-    : canais;
+  const canaisVisiveis = [
+    ...canais,
+    { rotulo: "Currículo", valor: "PDF", href: site.curriculo },
+  ];
 
   return (
     <section
@@ -38,9 +35,9 @@ export function Contato() {
       >
         <SectionHeading
           numero="06"
-          setor="Contratos"
-          titulo="Vamos abrir um contrato."
-          descricao="Descreva o problema em duas linhas. Eu respondo com escopo, prazo e preço — ou digo que não é comigo e indico alguém."
+          setor="Contato"
+          titulo="Vamos conversar."
+          descricao="Se o perfil encaixa no que vocês procuram, me escreva. Respondo em até 24h — e se não for comigo, eu digo na primeira resposta em vez de ocupar a agenda de ninguém."
         />
 
         <div className="mt-(--spacing-bloco) grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-16">
@@ -80,20 +77,26 @@ export function Contato() {
               ))}
             </ul>
 
-            <ul className="mt-8 space-y-2.5">
-              {garantias.map((garantia, i) => (
-                <li
-                  key={garantia}
+            <p
+              className="entra entra-esq kicker mt-10 text-text-dim"
+              style={{ "--i": canaisVisiveis.length + 1 } as React.CSSProperties}
+            >
+              Ficha de contratação
+            </p>
+            <dl className="mt-5 divide-y divide-hairline border-y border-hairline">
+              {contratacao.map((fato, i) => (
+                <div
+                  key={fato.rotulo}
                   style={{ "--i": canaisVisiveis.length + 2 + i } as React.CSSProperties}
-                  className="entra entra-esq flex items-baseline gap-3 font-mono text-xs text-text-dim"
+                  className="entra entra-esq flex items-baseline gap-4 py-3"
                 >
-                  <span aria-hidden="true" className="text-ok">
-                    ✓
-                  </span>
-                  {garantia}
-                </li>
+                  <dt className="w-24 shrink-0 font-mono text-xs tracking-[0.14em] text-text-mute uppercase">
+                    {fato.rotulo}
+                  </dt>
+                  <dd className="font-mono text-sm text-text">{fato.valor}</dd>
+                </div>
               ))}
-            </ul>
+            </dl>
           </aside>
         </div>
       </div>

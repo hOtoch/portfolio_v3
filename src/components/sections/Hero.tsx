@@ -1,4 +1,4 @@
-import { servicos, site } from "@/content/site";
+import { eixos, site } from "@/content/site";
 import { Button } from "@/components/ui/Button";
 import { Hud } from "@/components/ui/Hud";
 import { Retrato } from "@/components/ui/Retrato";
@@ -16,10 +16,11 @@ const COR_SERVICO = {
 /**
  * design.md §9.1 — Setor 00 // CHEGADA, arranjo "placa de neon".
  *
- * O nome é o elemento display e o <h1>; a função desce para subtítulo. Sem
- * badge de status, sem parágrafo de posicionamento e sem barra de provas: a
- * linha de serviços no rodapé do hero já diz o que é vendido, e a credibilidade
- * mora na ficha do setor Operador.
+ * O nome é o elemento display e o <h1>; a função desce para subtítulo.
+ *
+ * v4 — o hero virou cartão de identificação: título, recorte da especialidade,
+ * nível e base ficam visíveis de imediato, e o par de botões leva à prova e ao
+ * currículo em PDF, porque recrutador quer o arquivo, não só a página.
  */
 export function Hero() {
   return (
@@ -78,15 +79,23 @@ export function Hero() {
               style={{ animation: "reveal-up var(--dur-slow) var(--ease-out) calc(var(--abertura) + 440ms) both" }}
             >
               {site.titulo}
+              <span className="text-text-dim"> · {site.nivel}</span>
+            </p>
+
+            <p
+              className="mt-3 max-w-[42ch] text-text-dim"
+              style={{ animation: "reveal-up var(--dur-slow) var(--ease-out) calc(var(--abertura) + 480ms) both" }}
+            >
+              {site.especialidade} · {site.baseCompleta}
             </p>
 
             <div
               className="mt-8 flex flex-wrap items-center gap-4 sm:mt-10"
               style={{ animation: "reveal-up var(--dur-slow) var(--ease-out) calc(var(--abertura) + 540ms) both" }}
             >
-              <Button href="#contato">Abrir contrato</Button>
-              <Button href="#projetos" variante="secundario" seta>
-                Ver projetos
+              <Button href="#projetos">Ver projetos</Button>
+              <Button href={site.curriculo} target="_blank" rel="noopener" variante="secundario" seta>
+                Baixar CV
               </Button>
             </div>
           </div>
@@ -130,7 +139,7 @@ export function Hero() {
           style={{ animation: "reveal-up var(--dur-slow) var(--ease-out) calc(var(--abertura) + 660ms) both" }}
         >
           <ul className="flex flex-wrap items-center gap-x-10 gap-y-3">
-            {servicos.map((servico) => (
+            {eixos.map((servico) => (
               <li key={servico.id} className="flex items-center gap-2.5">
                 <span aria-hidden="true" className={`${COR_SERVICO[servico.cor]} text-sm`}>
                   {servico.glifo}

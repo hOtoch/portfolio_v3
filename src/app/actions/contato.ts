@@ -1,8 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
-import { faixasOrcamento, servicos, site } from "@/content/site";
+import { site } from "@/content/site";
 import type { EstadoContrato } from "@/lib/contato-tipos";
+import { enviarEmail, escapar } from "@/lib/email";
 
 /**
  * Limite por IP: 3 envios a cada 10 minutos.
@@ -30,13 +31,6 @@ function texto(dados: FormData, campo: string): string {
   return typeof valor === "string" ? valor.trim() : "";
 }
 
-function escapar(valor: string): string {
-  return valor
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 export async function enviarContrato(
   _anterior: EstadoContrato,
@@ -48,9 +42,8 @@ export async function enviarContrato(
   }
 
   const nome = texto(dados, "nome");
+  const empresa = texto(dados, "empresa");
   const contato = texto(dados, "contato");
-  const servico = texto(dados, "servico");
-  const orcamento = texto(dados, "orcamento");
   const briefing = texto(dados, "briefing");
 
   if (nome.length < 2 || nome.length > 120) {
@@ -63,17 +56,14 @@ export async function enviarContrato(
       mensagem: "Informe um e-mail ou telefone para eu responder.",
     };
   }
-  if (!servicos.some((s) => s.codinome === servico)) {
-    return { status: "erro", campo: "servico", mensagem: "Escolha um tipo de serviço." };
-  }
-  if (!faixasOrcamento.includes(orcamento as (typeof faixasOrcamento)[number])) {
-    return { status: "erro", campo: "orcamento", mensagem: "Escolha uma faixa de orçamento." };
+  if (empresa.length > 160) {
+    return { status: "erro", campo: "empresa", mensagem: "Nome da empresa muito longo." };
   }
   if (briefing.length < 20 || briefing.length > 4000) {
     return {
       status: "erro",
       campo: "briefing",
-      mensagem: "Descreva o projeto em pelo menos 20 caracteres.",
+      mensagem: "Escreva pelo menos 20 caracteres sobre a vaga ou o convite.",
     };
   }
 
@@ -90,57 +80,34 @@ export async function enviarContrato(
     };
   }
 
-  const chave = process.env.RESEND_API_KEY;
-  if (!chave) {
-    console.error(
-      "[contato] RESEND_API_KEY ausente — o formulário não envia. Veja .env.example.",
-    );
-    return {
-      status: "erro",
-      mensagem: `Canal de envio indisponível no momento. Escreva direto para ${site.email}.`,
-    };
-  }
-
   const corpo = `
-    <h2>Novo contrato — ${escapar(servico)}</h2>
+    <h2>Novo contato pelo portfólio</h2>
     <p><strong>Nome:</strong> ${escapar(nome)}</p>
+    ${empresa ? `<p><strong>Empresa:</strong> ${escapar(empresa)}</p>` : ""}
     <p><strong>Contato:</strong> ${escapar(contato)}</p>
-    <p><strong>Serviço:</strong> ${escapar(servico)}</p>
-    <p><strong>Orçamento:</strong> ${escapar(orcamento)}</p>
-    <p><strong>Briefing:</strong></p>
+    <p><strong>Mensagem:</strong></p>
     <p>${escapar(briefing).replace(/\n/g, "<br>")}</p>
     <hr>
     <p><small>Enviado pelo formulário de ${site.url} · IP ${escapar(ip)}</small></p>
   `;
 
-  try {
-    const resposta = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${chave}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.CONTATO_FROM ?? "Portfólio <onboarding@resend.dev>",
-        to: [site.email],
-        reply_to: contato.includes("@") ? contato : undefined,
-        subject: `[Contrato] ${nome} — ${servico}`,
-        html: corpo,
-      }),
-    });
+  const resultado = await enviarEmail({
+    origem: "contato",
+    assunto: `[Portfólio] ${nome}${empresa ? ` — ${empresa}` : ""}`,
+    html: corpo,
+    responderPara: contato.includes("@") ? contato : undefined,
+  });
 
-    if (!resposta.ok) {
-      console.error("[contato] Resend respondeu", resposta.status, await resposta.text());
-      return {
-        status: "erro",
-        mensagem: `Não consegui enviar agora. Escreva direto para ${site.email}.`,
-      };
-    }
-  } catch (erro) {
-    console.error("[contato] falha na requisição", erro);
+  if (resultado === "sem-chave") {
     return {
       status: "erro",
-      mensagem: `Sinal perdido. Escreva direto para ${site.email}.`,
+      mensagem: `Canal de envio indisponível no momento. Escreva direto para ${site.email}.`,
+    };
+  }
+  if (resultado === "falhou") {
+    return {
+      status: "erro",
+      mensagem: `Não consegui enviar agora. Escreva direto para ${site.email}.`,
     };
   }
 

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "convite": "node --env-file-if-exists=.env.local scripts/convite.mjs",
+    "curriculo": "node scripts/curriculo.mjs"
   },
   "dependencies": {
     "motion": "^13.3.0",
@@ -21,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^16.3.4",
+    "pdfkit": "^0.20.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

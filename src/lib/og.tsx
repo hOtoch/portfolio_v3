@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { servicos, site } from "@/content/site";
+import { eixos, site } from "@/content/site";
 
 /**
  * Imagem social compartilhada por `opengraph-image` e `twitter-image`.
@@ -127,7 +127,7 @@ export async function imagemSocial() {
         {/* Rodapé: serviços + skyline */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", gap: 40, padding: "0 72px 28px" }}>
-            {servicos.map((servico) => (
+            {eixos.map((servico) => (
               <div key={servico.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {/* Bloco em vez do glifo do site: ◤ ⟳ ◈ não existem na fonte
                     embarcada e o Satori falha ao buscar uma que os cubra. */}

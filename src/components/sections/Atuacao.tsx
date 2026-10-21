@@ -1,18 +1,23 @@
 import Link from "next/link";
-import { servicos, type Servico } from "@/content/site";
+import { eixos, type Eixo } from "@/content/site";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 /**
  * design.md §9.2 — Setor 01 // RUA DE NEON.
  * Tres fachadas. O card do meio desce 40px no desktop: e a assimetria que
  * tira o bloco da cara de template.
+ *
+ * v4 — as fachadas deixaram de anunciar servico a venda e passaram a declarar
+ * os tres eixos de atuacao. A tripla cor/glifo/codinome continua a mesma
+ * linguagem; o que mudou e o conteudo e o botao, que agora leva a prova em vez
+ * de pedir orcamento.
  */
 
 /** Movimento parado de cada glifo — o ⟳ girando é o mais literal dos três. */
 const VIDA_GLIFO = {
-  web: "glifo-web",
-  rpa: "glifo-rpa",
-  ia: "glifo-ia",
+  plataforma: "glifo-web",
+  llmops: "glifo-rpa",
+  agentes: "glifo-ia",
 } as const;
 
 const TEMA = {
@@ -39,7 +44,7 @@ const TEMA = {
   },
 } as const;
 
-function Fachada({ servico, indice }: { servico: Servico; indice: number }) {
+function Fachada({ eixo: servico, indice }: { eixo: Eixo; indice: number }) {
   const tema = TEMA[servico.cor];
   const deslocado = indice === 1;
 
@@ -103,10 +108,10 @@ function Fachada({ servico, indice }: { servico: Servico; indice: number }) {
           </ul>
 
           <Link
-            href="#contato"
+            href="#projetos"
             className="mt-5 inline-flex items-center gap-2 self-start py-3 font-mono text-xs font-semibold tracking-[0.1em] text-text-hi uppercase underline-offset-[6px] transition-colors duration-[--dur-fast] hover:underline"
           >
-            Pedir orçamento
+            Ver os projetos
             <span
               aria-hidden="true"
               className="transition-transform duration-[--dur-base] ease-[--ease-snap] group-hover:translate-x-1"
@@ -121,10 +126,10 @@ function Fachada({ servico, indice }: { servico: Servico; indice: number }) {
   );
 }
 
-export function Servicos() {
+export function Atuacao() {
   return (
     <section
-      id="servicos"
+      id="atuacao"
       className="relative scroll-mt-24 py-(--spacing-section)"
     >
       <div className="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
@@ -132,13 +137,13 @@ export function Servicos() {
           revelar
           numero="01"
           setor="Rua de neon"
-          titulo="O que eu construo"
-          descricao="Três frentes que se encaixam: o site que traz o cliente, a automação que tira o trabalho manual do caminho e o agente que atende quando você não está."
+          titulo="Onde eu atuo"
+          descricao="Três eixos que se encaixam: o agente que executa a tarefa, a camada que o mantém barato e de pé, e o backend que sustenta os dois em produção."
         />
 
         <ul className="rua-de-neon mt-(--spacing-bloco) grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {servicos.map((servico, i) => (
-            <Fachada key={servico.id} servico={servico} indice={i} />
+          {eixos.map((eixo, i) => (
+            <Fachada key={eixo.id} eixo={eixo} indice={i} />
           ))}
         </ul>
       </div>
