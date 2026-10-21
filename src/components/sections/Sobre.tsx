@@ -24,7 +24,7 @@ export function Sobre() {
   return (
     <section id="sobre" className="scroll-mt-24 py-(--spacing-section)">
       <div className="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
-        <SectionHeading numero="05" setor="Operador" titulo="Quem assina o contrato" />
+        <SectionHeading numero="05" setor="Operador" titulo="Quem assina o código" />
 
         <div className="mt-(--spacing-bloco) grid gap-10 lg:grid-cols-[20rem_1fr] lg:gap-14">
           {/* Ficha de identidade */}

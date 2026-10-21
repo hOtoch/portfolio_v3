@@ -41,7 +41,7 @@ export default function NotFound() {
         <div className="mt-10 flex flex-wrap gap-4">
           <Button href="/">Voltar ao início</Button>
           <Button href="/#contato" variante="secundario" seta>
-            Abrir contrato
+            Falar comigo
           </Button>
         </div>
       </div>
