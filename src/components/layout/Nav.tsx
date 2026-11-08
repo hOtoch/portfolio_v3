@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/content/site";
 import { Button } from "@/components/ui/Button";
+import { MarcaIcone } from "@/components/ui/MarcaIcone";
 
 /** design.md §8.1 — "Placa de rua". Encolhe e acende a borda apos 80px de scroll. */
 export function Nav() {
@@ -64,12 +65,7 @@ export function Nav() {
       <div className="mx-auto flex h-full max-w-(--container-site) items-center justify-between px-(--spacing-gutter)">
         {/* Marca */}
         <Link href="/" className="flex items-center gap-3" aria-label={`${site.nome}, início`}>
-          <span
-            aria-hidden="true"
-            className="tube chamfer grid size-8 place-items-center rounded-[2px] font-display text-xs font-bold text-magenta"
-          >
-            HO
-          </span>
+          <MarcaIcone className="size-8 shrink-0" />
           <span className="font-display text-sm font-bold tracking-[0.08em] text-text-hi uppercase">
             {site.nome}
           </span>

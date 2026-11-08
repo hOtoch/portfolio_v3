@@ -2188,6 +2188,86 @@ html {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────────
+   Cursor de HUD — design.md §7.11
+   O <CursorHud> marca o <html> com data-cursor-hud ao montar; so entao
+   o cursor nativo some. Sem JS, em toque ou antes de hidratar, o cursor
+   do sistema continua la.
+   ────────────────────────────────────────────────────────────────── */
+
+html[data-cursor-hud],
+html[data-cursor-hud] * {
+  cursor: none;
+}
+
+/* Digitacao fica com o I-beam nativo; o retrato tem mira propria. */
+html[data-cursor-hud] :is(input:not([type="checkbox"], [type="radio"], [type="submit"], [type="button"]), textarea, [contenteditable="true"]) {
+  cursor: text;
+}
+html[data-cursor-hud] :is(.retrato-interativo, .retrato-interativo *) {
+  cursor: crosshair;
+}
+
+.cursor-hud {
+  --hud-cor: var(--color-cyan);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  transition: opacity var(--dur-fast) linear;
+}
+
+.cursor-hud [data-canto],
+.cursor-hud [data-ponto],
+.cursor-hud [data-leitura] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.cursor-hud [data-canto] {
+  width: 8px;
+  height: 8px;
+  border: 0 solid var(--hud-cor);
+  filter: drop-shadow(0 0 3px var(--hud-cor));
+  transition: border-color var(--dur-base) var(--ease-out);
+}
+.cursor-hud [data-canto="tl"] { border-width: 1.5px 0 0 1.5px; }
+.cursor-hud [data-canto="tr"] { border-width: 1.5px 1.5px 0 0; }
+.cursor-hud [data-canto="bl"] { border-width: 0 0 1.5px 1.5px; }
+.cursor-hud [data-canto="br"] { border-width: 0 1.5px 1.5px 0; }
+
+/* O ponto e o ponteiro exato: sempre claro, para nao sumir sobre o botao magenta */
+.cursor-hud [data-ponto] {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-text-hi);
+  box-shadow: 0 0 0 1px rgba(7, 6, 13, 0.6);
+}
+
+.cursor-hud [data-leitura] {
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: rgba(7, 6, 13, 0.78);
+  color: var(--hud-cor);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+/* Fora de alvo, a coordenada e meta: some para o dim e nao disputa com o conteudo */
+.cursor-hud:not([data-travado]) [data-leitura] {
+  color: var(--color-text-mute);
+  background: transparent;
+}
+
 /* ==========================================================================
    REDUCAO DE MOVIMENTO — design.md §7.3 (obrigatorio)
    ========================================================================== */

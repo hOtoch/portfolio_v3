@@ -389,6 +389,7 @@ function GuiaCanais({
               type="button"
               aria-pressed={i === noAr}
               onClick={() => aoEscolher(i)}
+              data-cursor-rotulo={`SINTONIZAR CH ${pad(i + 1)}`}
               className={cn("guia-canal", horizontal && "guia-canal--compacto")}
             >
               <span className="guia-canal-numero">CH {pad(i + 1)}</span>
@@ -460,6 +461,7 @@ function Televisao({
 
       <div
         className="tv-tela"
+        data-cursor-cor={eixo.cor}
         data-chiando={(ligada && chiando) || undefined}
         data-energia={ligada ? "ligada" : "desligada"}
         data-mudou={mudou || undefined}
@@ -501,6 +503,7 @@ function Televisao({
             href={`/projetos/${projeto.slug}`}
             tabIndex={-1}
             aria-hidden="true"
+            data-cursor-rotulo="ABRIR CASE →"
             className="absolute inset-0 z-[2]"
           />
         )}
@@ -515,6 +518,7 @@ function Televisao({
         aria-label={ligada ? "Desligar a TV" : "Ligar a TV"}
         title={ligada ? "Desligar" : "Ligar"}
         onClick={aoEnergia}
+        data-cursor-rotulo={ligada ? "DESLIGAR" : "LIGAR"}
         className="tv-energia"
       />
       <span aria-hidden="true" className="tv-led" data-ligada={ligada || undefined} />
@@ -656,7 +660,7 @@ function Ficha({
   const ordem = (n: number) => ({ "--ordem": n }) as React.CSSProperties;
 
   return (
-    <article data-estado={estado} inert={inerte} className={cn("canal-ficha", className)}>
+    <article data-estado={estado} inert={inerte} data-cursor-cor={eixo.cor} className={cn("canal-ficha", className)}>
       <div
         style={ordem(0)}
         className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[0.68rem] tracking-[0.14em] uppercase"

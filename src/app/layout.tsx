@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Grain } from "@/components/fx/Grain";
 import { Scanlines } from "@/components/fx/Scanlines";
 import { RevealObserver } from "@/components/fx/RevealObserver";
+import { CursorHud } from "@/components/fx/CursorHud";
 import "@/styles/globals.css";
 
 /* Fontes — design.md §4.1. Self-hosted pelo next/font, subset latin, display swap. */
@@ -31,7 +32,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: `${site.nome} · ${site.titulo}`,
+  title: site.nome,
   description:
     "Engenheiro de IA pleno: agentes, LLMs e automação em produção, com o backend que sustenta. Engenharia de Computação pela UFES. Vitória/ES e remoto.",
   openGraph: {
@@ -39,12 +40,12 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: site.url,
     siteName: site.nome,
-    title: `${site.nome} · ${site.titulo}`,
+    title: site.nome,
     description: site.lead,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.nome} · ${site.titulo}`,
+    title: site.nome,
     description: site.lead,
   },
   alternates: { canonical: site.url },
@@ -142,6 +143,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Grain />
         <Scanlines />
         <RevealObserver />
+        <CursorHud />
 
         <script
           type="application/ld+json"
