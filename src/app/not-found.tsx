@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
  * `global-not-found` só faria sentido com múltiplos root layouts.
  */
 export const metadata: Metadata = {
-  title: "Setor não mapeado — 404",
+  title: "Setor não mapeado · 404",
   robots: { index: false, follow: true },
 };
 
@@ -35,7 +35,7 @@ export default function NotFound() {
 
         <p className="mt-8 max-w-[52ch] text-[length:var(--text-step-1)] text-text">
           Esse endereço não existe nesta cidade. Pode ser um link velho, pode ser um erro de
-          digitação — de qualquer forma, a rua principal continua aberta.
+          digitação. De qualquer forma, a rua principal continua aberta.
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4">

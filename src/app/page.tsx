@@ -7,6 +7,7 @@ import { Sobre } from "@/components/sections/Sobre";
 import { Contato } from "@/components/sections/Contato";
 import { Marquee } from "@/components/ui/Marquee";
 import { Abertura } from "@/components/layout/Abertura";
+import { Cenario } from "@/components/fx/Cenario";
 
 /**
  * Ordem dos setores — pensada para os ~90 segundos de leitura de um
@@ -29,9 +30,9 @@ const LETREIRO = [
   "LangGraph",
   "RAG",
   "Python",
-  "Django",
-  "Celery",
-  "Docker",
+  "Machine Learning",
+  "Finetuning",
+  "Evals",
   "Next.js",
 ] as const;
 
@@ -39,6 +40,8 @@ export default function Home() {
   return (
     <>
       <Abertura />
+      {/* A rua atrás de tudo: as seções são transparentes e andam por ela */}
+      <Cenario />
       <Hero />
       <Marquee itens={LETREIRO} />
       <Atuacao />

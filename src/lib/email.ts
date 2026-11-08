@@ -5,7 +5,8 @@ import { site } from "@/content/site";
  * Sem RESEND_API_KEY não envia: quem chama decide a mensagem para o usuário.
  */
 
-export type ResultadoEnvio = "ok" | "sem-chave" | "falhou";
+/** `limite`: a Resend respondeu 429 (cota do dia/mês ou requisições por segundo). */
+export type ResultadoEnvio = "ok" | "sem-chave" | "limite" | "falhou";
 
 export function escapar(valor: string): string {
   return valor
@@ -51,7 +52,7 @@ export async function enviarEmail({
 
     if (!resposta.ok) {
       console.error(`[${origem}] Resend respondeu`, resposta.status, await resposta.text());
-      return "falhou";
+      return resposta.status === 429 ? "limite" : "falhou";
     }
     return "ok";
   } catch (erro) {

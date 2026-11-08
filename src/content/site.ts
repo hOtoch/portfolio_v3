@@ -18,17 +18,19 @@ export const site = {
   coordenadas: { lat: -20.32, lon: -40.34 },
   url: "https://hugootoch.dev",
   email: "otochdev@gmail.com",
+  /** Só dígitos, com DDI e DDD: é o número do link wa.me do formulário de contato. */
+  whatsapp: "552731900517",
   github: "https://github.com/hugootoch",
   linkedin: "https://linkedin.com/in/hugootoch",
   /** Curriculo em PDF — CTA do hero e do contato. */
   curriculo: "/hugo-otoch-engenheiro-de-ia.pdf",
   // Foto do hero e do setor Operador. Vazio = placa de neon com o monograma.
   foto: "/otoch.png" as string,
-  formacao: "Engenharia de Computação — UFES",
-  formacaoCompleta: "Bacharelado em Engenharia de Computação — UFES · concluído em fev/2026",
+  formacao: "Engenharia de Computação · UFES",
+  formacaoCompleta: "Bacharelado em Engenharia de Computação, UFES · concluído em fev/2026",
   idiomas: "Português (nativo) · Inglês (B1)",
   tagline: "Sistemas que trabalham enquanto você dorme.",
-  lead: "Construo agentes e aplicações com LLM que saem do notebook e vão para produção — com o backend que sustenta.",
+  lead: "Construo agentes e aplicações com LLM que saem do notebook e vão para produção, com o backend que sustenta.",
   /** Aberto a propostas. Controla o StatusBadge. */
   disponivel: true,
 } as const;
@@ -62,12 +64,13 @@ export const eixos: readonly Eixo[] = [
     nome: "Agentes de IA",
     glifo: "◈",
     cor: "crimson",
-    vitrine: "Agentes que executam tarefas reais, com ferramentas, memória e saída validada.",
+    vitrine: "Agentes que executam tarefas reais.",
     itens: [
-      "LangChain · LangGraph",
-      "Tool use e pesquisa na web",
-      "Saída estruturada por schema",
-      "Fluxos agênticos multi-etapa",
+      "Atendimento e qualificação de leads no WhatsApp",
+      "Coleta e enriquecimento de dados na web",
+      "RAG sobre documentos internos",
+      "Geração de conteúdo com formato garantido",
+      "Ferramentas ligadas a APIs e sistemas reais",
     ],
   },
   {
@@ -76,26 +79,28 @@ export const eixos: readonly Eixo[] = [
     nome: "LLM em produção",
     glifo: "⟳",
     cor: "violet",
-    vitrine: "A parte que separa demo de sistema: custo, falha, latência e saber quando não usar IA.",
+    vitrine: "O que separa a demo do sistema.",
     itens: [
-      "Multiprovedor com fallback",
-      "Cache de prompt e custo por token",
-      "Temperatura por tarefa",
-      "Retry com backoff e cota",
+      "Fallback entre provedores",
+      "Avaliação de RAG por métricas",
+      "Cache de resultado para não pagar duas vezes",
+      "Avaliação de qualidade das respostas",
+      "Gestão de tokens e latência",
     ],
   },
   {
     id: "plataforma",
-    codinome: "SHIP//PROD",
-    nome: "Plataforma e backend",
+    codinome: "FULL//STACK",
+    nome: "Produto ponta a ponta",
     glifo: "◤",
     cor: "magenta",
-    vitrine: "O que sustenta a IA embaixo: API, fila, banco e esteira de entrega.",
+    vitrine: "Da tela ao banco, tudo em produção.",
     itens: [
-      "Python · Django · DRF",
-      "Celery · RabbitMQ · Redis",
-      "Docker · CI/CD · Pytest",
-      "PostgreSQL · MSSQL · ETL",
+      "Interfaces em React, Next.js e TypeScript",
+      "APIs em Django/DRF com filas no Celery",
+      "ETL e modelagem em PostgreSQL e MSSQL",
+      "Dashboards que viram decisão",
+      "Deploy com Docker, CI/CD e VPS",
     ],
   },
 ] as const;
@@ -119,7 +124,7 @@ export const contratacao = [
   { rotulo: "Modalidade", valor: "CLT ou PJ" },
   { rotulo: "Local", valor: "Remoto · Vitória/ES" },
   { rotulo: "Inglês", valor: "Intermediário (B1)" },
-  { rotulo: "Formação", valor: "Eng. de Computação — UFES · fev/2026" },
+  { rotulo: "Formação", valor: "Eng. de Computação, UFES · fev/2026" },
 ] as const;
 
 export const nav = [

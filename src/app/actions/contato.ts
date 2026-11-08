@@ -1,69 +1,58 @@
 "use server";
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { site } from "@/content/site";
-import type { EstadoContrato } from "@/lib/contato-tipos";
+import {
+  type EstadoContrato,
+  ehEnviarPor,
+  emailValido,
+  LIMITES,
+  linkWhatsApp,
+  validarComum,
+} from "@/lib/contato-tipos";
 import { enviarEmail, escapar } from "@/lib/email";
+import { permitirEnvio } from "@/lib/limite";
 
-/**
- * Limite por IP: 3 envios a cada 10 minutos.
- * Em memoria — suficiente para um portfolio. Numa infra com varias instancias
- * cada uma tem o seu contador; se isso virar problema, trocar por Redis/Upstash.
- */
-const JANELA_MS = 10 * 60 * 1000;
-const MAX_ENVIOS = 3;
-const historico = new Map<string, number[]>();
-
-function excedeuLimite(ip: string): boolean {
-  const agora = Date.now();
-  const recentes = (historico.get(ip) ?? []).filter((t) => agora - t < JANELA_MS);
-  if (recentes.length >= MAX_ENVIOS) {
-    historico.set(ip, recentes);
-    return true;
-  }
-  recentes.push(agora);
-  historico.set(ip, recentes);
-  return false;
-}
+/** Quando o e-mail não pode sair, o WhatsApp do mesmo formulário continua livre. */
+const TENTE_WHATSAPP = `Troque "enviar_por" para WhatsApp ou escreva para ${site.email}.`;
 
 function texto(dados: FormData, campo: string): string {
   const valor = dados.get(campo);
   return typeof valor === "string" ? valor.trim() : "";
 }
 
-
 export async function enviarContrato(
   _anterior: EstadoContrato,
   dados: FormData,
 ): Promise<EstadoContrato> {
-  // Honeypot: preenchido = bot. Responde como sucesso para nao ensinar o robo.
-  if (texto(dados, "empresa_site")) {
+  // O campo-isca do formulário se chama `url_referencia` (FormularioContrato).
+  // Preenchido = bot. Responde como sucesso para nao ensinar o robo.
+  if (texto(dados, "url_referencia")) {
     return { status: "ok" };
   }
 
+  const pedido = texto(dados, "enviar_por");
+  const enviarPor = ehEnviarPor(pedido) ? pedido : "email";
   const nome = texto(dados, "nome");
   const empresa = texto(dados, "empresa");
-  const contato = texto(dados, "contato");
+  const email = texto(dados, "email");
   const briefing = texto(dados, "briefing");
 
-  if (nome.length < 2 || nome.length > 120) {
-    return { status: "erro", campo: "nome", mensagem: "Informe o seu nome." };
+  const erro = validarComum({ nome, empresa, mensagem: briefing });
+  if (erro) return erro;
+
+  // WhatsApp: com JS o formulário abre o link sozinho e nem chega aqui. Sem JS,
+  // a action manda o navegador direto para a conversa.
+  if (enviarPor === "whatsapp") {
+    redirect(linkWhatsApp({ nome, empresa, mensagem: briefing }));
   }
-  if (contato.length < 5 || contato.length > 160) {
+
+  if (email.length > LIMITES.email.max || !emailValido(email)) {
     return {
       status: "erro",
-      campo: "contato",
-      mensagem: "Informe um e-mail ou telefone para eu responder.",
-    };
-  }
-  if (empresa.length > 160) {
-    return { status: "erro", campo: "empresa", mensagem: "Nome da empresa muito longo." };
-  }
-  if (briefing.length < 20 || briefing.length > 4000) {
-    return {
-      status: "erro",
-      campo: "briefing",
-      mensagem: "Escreva pelo menos 20 caracteres sobre a vaga ou o convite.",
+      campo: "email",
+      mensagem: "Informe um e-mail válido para eu responder, como voce@empresa.com.",
     };
   }
 
@@ -73,10 +62,18 @@ export async function enviarContrato(
     cabecalhos.get("x-real-ip") ??
     "desconhecido";
 
-  if (excedeuLimite(ip)) {
+  // Limite no Upstash (lib/limite.ts): 3 por IP a cada 10 min e o teto diário do site.
+  const limite = await permitirEnvio("contato", ip);
+  if (limite === "limite-pessoal") {
     return {
       status: "erro",
-      mensagem: `Muitos envios seguidos. Tente de novo em alguns minutos ou escreva para ${site.email}.`,
+      mensagem: `Você já mandou 3 mensagens nos últimos 10 minutos. Espere um pouco, ou: ${TENTE_WHATSAPP}`,
+    };
+  }
+  if (limite === "limite-diario") {
+    return {
+      status: "erro",
+      mensagem: `O envio por e-mail atingiu o limite de hoje. ${TENTE_WHATSAPP}`,
     };
   }
 
@@ -84,7 +81,7 @@ export async function enviarContrato(
     <h2>Novo contato pelo portfólio</h2>
     <p><strong>Nome:</strong> ${escapar(nome)}</p>
     ${empresa ? `<p><strong>Empresa:</strong> ${escapar(empresa)}</p>` : ""}
-    <p><strong>Contato:</strong> ${escapar(contato)}</p>
+    <p><strong>E-mail:</strong> ${escapar(email)}</p>
     <p><strong>Mensagem:</strong></p>
     <p>${escapar(briefing).replace(/\n/g, "<br>")}</p>
     <hr>
@@ -93,15 +90,22 @@ export async function enviarContrato(
 
   const resultado = await enviarEmail({
     origem: "contato",
-    assunto: `[Portfólio] ${nome}${empresa ? ` — ${empresa}` : ""}`,
+    assunto: `[Portfólio] ${nome}${empresa ? ` · ${empresa}` : ""}`,
     html: corpo,
-    responderPara: contato.includes("@") ? contato : undefined,
+    // "Responder" no seu e-mail já vai para a pessoa.
+    responderPara: email,
   });
 
   if (resultado === "sem-chave") {
     return {
       status: "erro",
       mensagem: `Canal de envio indisponível no momento. Escreva direto para ${site.email}.`,
+    };
+  }
+  if (resultado === "limite") {
+    return {
+      status: "erro",
+      mensagem: `O envio por e-mail atingiu o limite de hoje. ${TENTE_WHATSAPP}`,
     };
   }
   if (resultado === "falhou") {

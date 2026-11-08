@@ -5,6 +5,7 @@ export function SectionHeading({
   titulo,
   descricao,
   revelar = true,
+  largo = false,
 }: {
   numero: string;
   setor: string;
@@ -12,9 +13,11 @@ export function SectionHeading({
   descricao?: string;
   /** Entra com a revelação no scroll (§7.2). */
   revelar?: boolean;
+  /** Sem o limite de 46ch: o título ocupa a largura toda (palco preso da TV). */
+  largo?: boolean;
 }) {
   return (
-    <header className="max-w-[46ch]" {...(revelar ? { "data-reveal": "" } : {})}>
+    <header className={largo ? undefined : "max-w-[46ch]"} {...(revelar ? { "data-reveal": "" } : {})}>
       <p className="kicker flex items-center gap-3 text-text-dim">
         <span className="text-text-mute">[ {numero} ]</span>
         <span className="text-cyan/80">{setor}</span>

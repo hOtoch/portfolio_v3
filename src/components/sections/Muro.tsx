@@ -25,7 +25,6 @@ export function Muro() {
             numero="06"
             setor="Muro"
             titulo="O que ficou colado no muro"
-            descricao="Cada lambe aqui foi colado por um cliente, com as palavras dele, depois do contrato encerrado."
           />
           {total > 0 && (
             <p

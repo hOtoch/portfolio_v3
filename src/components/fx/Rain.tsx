@@ -339,7 +339,7 @@ export function RainBackground({
 
 /**
  * Chuva do hero — design.md §6.11.
- * Overlay sem filhos, na frente do skyline e atrás do conteúdo.
+ * Overlay sem filhos, na frente da foto da hero e atrás do conteúdo.
  */
 export function Rain() {
   return (

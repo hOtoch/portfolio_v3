@@ -72,21 +72,30 @@ export function Sobre() {
             <div
               data-reveal
               style={{ "--reveal-atraso": "120ms" } as React.CSSProperties}
-              className="max-w-[62ch] space-y-5 text-[length:var(--text-step-1)] leading-[1.55] text-text"
+              className="max-w-[64ch] space-y-6 font-mono text-[length:var(--text-step-0)] leading-[1.8] text-text"
             >
+              {/* Em mono, como o resto da ficha do operador: o texto lê como um
+                  registro impresso, não como texto de marketing (design.md §4.3). */}
+              {/* Enxuto de propósito: experiência, stack e formação, e quem eu sou fora
+                  do trabalho. O detalhe de cada passagem mora na Trajetória. */}
+              {/* Um fio só puxa os três parágrafos: a curiosidade que levou da
+                  faculdade à IA é a mesma que move a vida fora do trabalho. */}
               <p className="entra">
-                Eu trabalho na parte da IA que não aparece na demo: o agente que precisa errar
-                menos, custar menos e continuar de pé quando o provedor cai. Engenheiro de
-                computação pela UFES, hoje cuido da arquitetura de uma plataforma de IA que
-                conduz negociações de cobrança sozinha, ponta a ponta.
+                Comecei em 2022, num estágio de dados, e fui passando por RPA, full stack e
+                backend até chegar onde estou hoje: engenheiro de IA na Tech Solutio, cuidando da
+                arquitetura de uma plataforma que conduz negociações de cobrança sozinha.
               </p>
               <p className="entra" style={{ "--i": 2 } as React.CSSProperties}>
-                Cheguei na IA por baixo, pelo backend: APIs e ETL alimentando decisão de gente que
-                não pode esperar relatório, automação de coleta rodando de madrugada, e um ano e
-                meio entregando agentes em LangChain e LangGraph para fluxo de operação real. É de
-                onde vem o jeito que eu trabalho — teste antes de confiar, custo medido em vez de
-                estimado, e uma regra que eu levo a sério: só colocar modelo onde ele agrega.
-                Onde texto fixo resolve, texto fixo resolve.
+                A IA não apareceu do nada. Ela já estava no meu TCC em Engenharia de Computação na
+                UFES, sobre aprendizado de máquina, e virou o que eu mais gosto de fazer: Python,
+                LangChain e LangGraph, e principalmente o que fica em volta do modelo, como saída
+                estruturada, avaliação e custo por conversa.
+              </p>
+              <p className="entra" style={{ "--i": 3 } as React.CSSProperties}>
+                Fora das telas, a curiosidade é a mesma, só muda de assunto. Sou flamenguista,
+                acompanho esporte de todo tipo e a pelada da semana até virou projeto, o
+                Peladinhas Sofredores. Viajo sempre que dá e, quando estou em casa, gasto bastante
+                tempo estudando sobre animais selvagens.
               </p>
             </div>
 

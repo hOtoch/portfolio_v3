@@ -9,7 +9,7 @@ import { eixos, site } from "@/content/site";
  * Por isso o skyline aqui é uma fileira de divs, não um SVG.
  */
 
-export const alt = `${site.nome} — ${site.titulo}`;
+export const alt = `${site.nome} · ${site.titulo}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

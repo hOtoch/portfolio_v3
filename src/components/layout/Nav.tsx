@@ -63,7 +63,7 @@ export function Nav() {
     >
       <div className="mx-auto flex h-full max-w-(--container-site) items-center justify-between px-(--spacing-gutter)">
         {/* Marca */}
-        <Link href="/" className="flex items-center gap-3" aria-label={`${site.nome} — início`}>
+        <Link href="/" className="flex items-center gap-3" aria-label={`${site.nome}, início`}>
           <span
             aria-hidden="true"
             className="tube chamfer grid size-8 place-items-center rounded-[2px] font-display text-xs font-bold text-magenta"

@@ -4,26 +4,13 @@ import { site } from "@/content/site";
 import { lerConvite } from "@/lib/convite";
 import { LIMITES_LAMBE, type EstadoLambe } from "@/lib/depoimento-tipos";
 import { enviarEmail, escapar } from "@/lib/email";
+import { permitirEnvio } from "@/lib/limite";
 
 /**
  * Envio de depoimento pelo muro. Nada é publicado aqui: o lambe chega por
  * e-mail com o bloco pronto para colar em src/content/depoimentos.ts, e só
  * aparece no site depois que você cola e publica (armazenamento "opção 1").
  */
-
-/** No máximo 3 envios por convite a cada hora — um link vazado não vira spam. */
-const JANELA_MS = 60 * 60 * 1000;
-const MAX_ENVIOS = 3;
-const envios = new Map<string, number[]>();
-
-function excedeuLimite(chave: string): boolean {
-  const agora = Date.now();
-  const recentes = (envios.get(chave) ?? []).filter((t) => agora - t < JANELA_MS);
-  const excedeu = recentes.length >= MAX_ENVIOS;
-  if (!excedeu) recentes.push(agora);
-  envios.set(chave, recentes);
-  return excedeu;
-}
 
 function texto(dados: FormData, campo: string): string {
   const valor = dados.get(campo);
@@ -71,10 +58,19 @@ export async function enviarLambe(_anterior: EstadoLambe, dados: FormData): Prom
     return { status: "erro", campo: "nota", mensagem: "Dê uma nota de 1 a 5." };
   }
 
-  if (excedeuLimite(token)) {
+  // Limite no Upstash (lib/limite.ts): 3 por convite a cada hora e o teto diário
+  // de e-mails, que o muro divide com o formulário de contato.
+  const limite = await permitirEnvio("muro", token);
+  if (limite === "limite-pessoal") {
     return {
       status: "erro",
       mensagem: "Este convite já colou lambes demais por agora. Tente de novo mais tarde.",
+    };
+  }
+  if (limite === "limite-diario") {
+    return {
+      status: "erro",
+      mensagem: `O muro atingiu o limite de hoje. Tente amanhã ou mande o depoimento para ${site.email}.`,
     };
   }
 
@@ -100,7 +96,7 @@ export async function enviarLambe(_anterior: EstadoLambe, dados: FormData): Prom
   ].join("\n");
 
   const html = `
-    <h2>Lambe novo no muro — ${escapar(negocio)}</h2>
+    <h2>Lambe novo no muro: ${escapar(negocio)}</h2>
     <p><strong>Convite de:</strong> ${escapar(convite.cliente)}</p>
     <p><strong>Assinado por:</strong> ${escapar(nome)}</p>
     <p><strong>Nota:</strong> ${"★".repeat(nota)}${"☆".repeat(5 - nota)}</p>
@@ -117,7 +113,7 @@ export async function enviarLambe(_anterior: EstadoLambe, dados: FormData): Prom
 
   const resultado = await enviarEmail({
     origem: "muro",
-    assunto: `[Muro] ${negocio} — ${nota}★`,
+    assunto: `[Muro] ${negocio} · ${nota}★`,
     html,
   });
 

@@ -88,7 +88,7 @@ o site: fachadas, cards de case, página de case, OG image.
 |---|---|---|---|---|
 | Agentes de IA | `AGENT//CORE` | `--color-crimson` | `◈` | Agentes que executam tarefas reais, com ferramentas, memória e saída validada. |
 | LLM em produção | `LLM//OPS` | `--color-violet` | `⟳` | A parte que separa demo de sistema: custo, falha, latência e saber quando não usar IA. |
-| Plataforma e backend | `SHIP//PROD` | `--color-magenta` | `◤` | O que sustenta a IA embaixo: API, fila, banco e esteira de entrega. |
+| Produto ponta a ponta | `FULL//STACK` | `--color-magenta` | `◤` | Da tela ao banco: interface, API, fila e dados, tudo entregue em produção. |
 
 **A ordem é a candidatura**: o mais forte primeiro.
 
@@ -111,7 +111,7 @@ mudaram (leva à prova, não ao orçamento).
    uma placa, uma tela, um cabo, um refletor. Nunca um `box-shadow` colorido solto num card.
 3. **Sujeira por cima de tudo.** Grão, scanline, vinheta e leve aberração cromática sobre a página
    inteira. Pixel limpo demais entrega que é template.
-4. **Profundidade em camadas.** Fundo (skyline/névoa) → meio (conteúdo) → frente (chuva/grão/HUD).
+4. **Profundidade em camadas.** Fundo (foto da rua/névoa) → meio (conteúdo) → frente (chuva/grão/HUD).
    Parallax discreto separa as camadas.
 5. **Tipografia é sinalização urbana.** Títulos gigantes e apertados, kickers em mono maiúsculo —
    letreiro e placa de rua.
@@ -139,7 +139,7 @@ mudaram (leva à prova, não ao orçamento).
 Específicos da v4:
 
 - ❌ **Barra de "nível de habilidade"** (`Python ▓▓▓▓░ 85%`). É informação vazia e todo
-  entrevistador técnico sabe disso. A profundidade se diz em palavra (`nota` no arsenal, §9.5).
+  entrevistador técnico sabe disso. A profundidade se diz pelas conexões do mapa do arsenal (§9.6).
 - ❌ **Métrica inventada** para preencher card. Sem medição → o campo não existe (§17.2).
 - ❌ **Vocabulário de venda**: contrato, orçamento, proposta, escopo, prazo, "vamos trabalhar
   juntos". Se aparecer, é resíduo da v3 — remova.
@@ -186,7 +186,7 @@ não precisam virar utilitário.
   --color-text-mute: #807a9e;  /* meta discreta, numeração de setor — 4.87:1 ✓ */
 
   /* Neon de marca — a cor de cada eixo (§1.4) */
-  --color-magenta: #ff2d8f;  /* SHIP//PROD · CTA, links, foco */
+  --color-magenta: #ff2d8f;  /* FULL//STACK · CTA, links, foco */
   --color-violet:  #b14bff;  /* LLM//OPS */
   --color-crimson: #ff3355;  /* AGENT//CORE · também o erro */
 
@@ -281,6 +281,7 @@ Teto: **3 famílias e 4 pesos**, `font-display: swap`, subset latino.
 | Kicker | mono 500 · `--text-step--1` · UPPERCASE · `ls .22em` · ciano ou `--color-text-dim` |
 | Corpo | sans 400 · `--text-step-0` · `lh 1.65` · `max-width: 68ch` |
 | Lead | sans 400 · `--text-step-1` · `lh 1.5` · `max-width: 54ch` |
+| Texto do Operador (§9.6) | mono 500 · `--text-step-0` · `lh 1.8` · `max-width: 64ch` — lê como registro da ficha |
 | Botão | mono 600 · `.875rem` · UPPERCASE · `ls .1em` |
 | Número (stat) | display 700 · `--text-step-3/4` · `font-variant-numeric: tabular-nums` |
 | Numeração de setor | mono · formato `[ 01 ]` · `--color-text-mute` |
@@ -310,7 +311,7 @@ Todo o conteúdo real do site é em **português brasileiro**.
 ```
 
 - Conteúdo padrão ocupa **col 2–11**.
-- Elementos "de rua" (letreiro, marquee, skyline, trilha do percurso) **sangram até a borda**.
+- Elementos "de rua" (letreiro, marquee, foto da hero, trilha do percurso) **sangram até a borda**.
 - Assimetria obrigatória: texto em `col 2–7` + visual em `col 8–12`; na seção seguinte, inverta
   e desloque verticalmente.
 
@@ -650,7 +651,7 @@ O mecanismo do setor 03 (§9.4), em `components/sections/Trajetoria.tsx`.
   **Precisa de `--z-overlay`**, acima da nav: com o mesmo `--z-sticky` a navbar é pintada
   depois no DOM e engole o filete inteiro.
 - **Parallax do cenário:** `[data-parallax]` com `animation-timeline: view(block)`.
-  Névoa a 22%, skyline a 9% — as duas únicas camadas, dentro do teto de 3 do §7.2.
+  Névoa a 22%, foto da hero a 7% — as duas únicas camadas, dentro do teto de 3 do §7.2.
 - **Setor ativo na nav:** `IntersectionObserver` com `rootMargin: -45% 0px -45%`, ou seja, a
   faixa de detecção é a fatia central da tela. O item ganha um ponto ciano. Num salto
   instantâneo pode não haver setor ativo — aceitável, o pior caso é nenhum ponto.
@@ -817,8 +818,9 @@ A ordem é deliberada: **quem é → onde atua → prova → percurso → profun
 
 Arranjo **"placa de neon"**: o nome é o letreiro, a foto é o retrato ao lado dele.
 
-**Composição:** full-viewport, duas colunas (`1.35fr / 1fr`) a partir de `md`. Skyline em
-silhueta no fundo com janelas acesas piscando; névoa violeta subindo da base; chuva fina na
+**Composição:** full-viewport, duas colunas (`1.35fr / 1fr`) a partir de `md`. Ao fundo, a
+foto `public/hero.jpg` — rua molhada às 2h, neon magenta/violeta, lado esquerdo escuro para o
+nome respirar —, com véu escuro à esquerda e no topo para leitura; névoa violeta subindo da base; chuva fina na
 camada da frente; asfalto escurecendo os últimos 30% da altura.
 
 ```
@@ -834,7 +836,7 @@ camada da frente; asfalto escurecendo os últimos 30% da altura.
   [ VER PROJETOS ]  [ BAIXAR CV → ]
 
   ═══════════════════════════════════════════════════════
-  ◈ AGENT//CORE   ⟳ LLM//OPS   ◤ SHIP//PROD   ← faixa de rodapé
+  ◈ AGENT//CORE   ⟳ LLM//OPS   ◤ FULL//STACK   ← faixa de rodapé
   │                                    VITÓRIA/ES · HUD
 ```
 
@@ -887,10 +889,10 @@ público deixa de importar quase totalmente.
 |---|---|---|---|
 | `prospecto-sh` | `AGENT//CORE` | privado | autoral · **destaque** |
 | `plataforma-ia-cobrancas` | `AGENT//CORE` | confidencial | profissional |
-| `pelada-sofredores` | `SHIP//PROD` | privado | autoral |
+| `pelada-sofredores` | `FULL//STACK` | privado | autoral |
 | `agentes-autonomos-langgraph` | `AGENT//CORE` | confidencial | cliente |
-| `sigamaes-ufes` | `SHIP//PROD` | confidencial | acadêmico |
-| `dashboards-etl-django` | `SHIP//PROD` | confidencial | profissional |
+| `sigamaes-ufes` | `FULL//STACK` | confidencial | acadêmico |
+| `dashboards-etl-django` | `FULL//STACK` | confidencial | profissional |
 
 **Faixa `02b // FORA DO EIXO`.** Abaixo do grid, separada por uma régua, a faixa de sites de
 cliente no ar (`sentir-terapias`, `pet-park`), no `<ProjetosRolagem>` com carrossel de celular.
@@ -915,63 +917,120 @@ Ordem da página, e ela importa:
 1. **Cabeçalho** — eixo, etiqueta de status, título, origem · período, subtítulo.
 2. **Números medidos**, quando existirem.
 3. **O problema / O que eu construí**, em duas colunas.
-4. **Decisões e por quê** — grid de cards numerados. *Vem antes das telas, de propósito.*
-5. **As telas** — `<BrowserFrame>` por captura, com legenda. A nota sobre dados fictícios só
-   aparece para projeto autoral.
-6. **No celular** — `<PhoneCarousel>`, quando houver captura mobile.
-7. **Stack** completa em chips.
-8. **Origem do código**, quando o projeto parte de código de outra pessoa.
+4. **Como funciona** — o fluxo em etapas numeradas (`fluxo`), quando existir.
+5. **O que ele faz** — cada grupo de `funcionalidades` ao lado da captura que o mostra,
+   alternando os lados. A nota sobre dados fictícios só aparece para projeto autoral.
+6. **Decisões e por quê** — grid de cards numerados.
+7. **Mais telas** — as capturas de `desktop` que nenhuma funcionalidade usou.
+8. **No celular** — `<PhoneCarousel>`, quando houver captura mobile.
+9. **Qualidade e entrega** (`qualidade`) ao lado da **Stack** completa em chips.
 
-> **Atribuição é obrigatória e é sinal positivo.** O `prospecto-sh` é fork evoluído de um projeto
-> MIT de terceiro. Omitir isso seria risco (o recrutador checa o GitHub) e mentira; declarar,
-> dizendo exatamente o que foi construído por cima, mostra que a pessoa lê e estende código
-> alheio. O campo `atribuicao` existe para isso.
 
 ### 9.5 Percurso — `03 // PERCURSO`
 
 H2 `O caminho até aqui`. A trilha de §7.9, alimentada por `trajetoria` em `content/percurso.ts`.
 
-**Dois trilhos, e por quê.** Os períodos **se sobrepõem de verdade**: o SigAMAES (fev/25–jan/26)
-roda dentro da Seer (ago/25–mar/26), e o freelance (jan/24–ago/25) cobre o início do SigAMAES.
-Uma linha única acendendo em sequência daria a entender que uma coisa terminou quando a outra
-começou — pareceria erro ou, pior, invenção. Então:
+**Sobreposição, e por quê.** Os períodos **se sobrepõem de verdade**: o SigAMAES (fev/25 a
+jan/26) correu junto com a Seer (ago/25 a mar/26) e com o trabalho autônomo (jan/24 a ago/25). Uma
+linha única acendendo em sequência daria a entender que uma coisa terminou quando a outra
+começou, o que pareceria erro ou invenção. Por isso cada marco mostra **em paralelo com** quais
+outros correu, como links para eles. A cor do tipo (`emprego` magenta, `autoral` crimson,
+`academico` violeta, `formacao` ciano) aparece no rótulo de cada marco e no seu marcador.
 
-- **Trilho da esquerda:** `emprego` (magenta).
-- **Trilho da direita:** `autoral` (crimson), `academico` e `formacao` (violeta).
-- No celular os dois viram um trilho à esquerda — duas colunas não cabem. A cor do marcador
-  continua distinguindo o tipo, e há legenda no topo.
+**Ordem decrescente.** O cargo atual é o primeiro item, marcado `● agora`: recrutador raramente
+chega ao fim da seção. A formação entra no mês em que foi concluída (fev/2026).
 
-Assim a sobreposição deixa de ser bug e vira argumento: mostra que houve emprego remoto e
-liderança técnica de projeto acadêmico ao mesmo tempo.
-
-**Ordem decrescente.** A narrativa "a trilha acende até hoje" seria mais bonita em ordem
-crescente, mas recrutador raramente chega ao fim da seção: o cargo atual tem que ser o primeiro
-item, marcado `● agora`.
-
-**Cada marco traz** período, função, organização · local, uma **barra de duração** proporcional
-aos meses (é ela que torna a sobreposição legível), 2–3 marcas do currículo, chips de stack e,
-quando existe, link `Ver o projeto →` para o case correspondente. Esse link é o que amarra
-percurso e prova num circuito só.
+**Cada marco** tem o título de um lado da trilha (tipo, período, função, organização · local ·
+duração, os marcos com que correu **em paralelo** como links, e a stack) e os feitos do outro,
+como **lâmpadas**: cada uma acende quando a linha de leitura passa por ela. No celular a trilha
+vai para a esquerda, com o título em cima e as lâmpadas embaixo. A formação traz o link do TCC
+em PDF (`public/tcc-hugo-otoch.pdf`).
 
 > As datas aqui têm precisão de **mês** porque a trilha mede duração. Data vaga em site de
 > candidato levanta suspeita.
 
 ### 9.6 Arsenal — `04 // ARSENAL`
 
-Grid denso de tags agrupadas. Sem barras de "nível de habilidade" (§2.1).
+H2 `Com o que eu trabalho`. **Um mapa de metrô de Night City**: cada grupo é uma linha na sua
+cor, cada tecnologia uma estação. Sem barras de "nível de habilidade" (§2.1): a profundidade
+aparece pelas conexões entre as linhas.
 
-Ordem dos grupos — **a ordem do arsenal é a ordem da candidatura**:
+**A fonte é o currículo, não os projetos.** As estações são a seção Habilidades de
+`scripts/curriculo.mjs` inteira, mais o que as experiências do currículo citam pelo nome
+(Spring Boot, Power BI, Angular, Next.js). Tecnologia que só aparece na stack de um projeto não
+entra, por mais que o projeto a use: provedores de LLM, SQLite, React, TypeScript, Tailwind,
+Vite e VPS ficaram de fora por isso. O site e o PDF que o recrutador baixa dizem a mesma coisa.
+Mudou o currículo, mude `arsenal` em `content/percurso.ts`.
+
+| Linha | Grupo | Cor |
+|---|---|---|
+| `L1` | IA & Agentes | `--color-crimson` (a cor do `AGENT//CORE`) |
+| `L2` | Backend & arquitetura | `--color-violet` |
+| `L3` | Dados & infra | `--color-cyan` (cabe em "dados", §3.3) |
+| `L4` | Automação / RPA | `--color-sodium`, a luz quente ao longe: "de onde eu vim" |
+| `L5` | Frontend | `--color-magenta` |
+
+**O desenho conta a história.** Python é o nó de onde saem três linhas. A Automação chega
+de baixo e vira IA ali, que é literalmente "de onde eu vim para a IA". A IA forma um arco
+**apoiado no Backend** ("a base que sustenta tudo acima") e desce em Celery. Dados e Frontend
+descem das baldeações em PostgreSQL e Spring Boot.
+
+**Baldeação só com prova do currículo.** Uma estação que está em duas linhas precisa estar em
+`baldeacoes` (`content/percurso.ts`) com o slug do **marco da trajetória** (a experiência) em
+que as linhas rodaram juntas:
+
+| Baldeação | Linhas | Prova |
+|---|---|---|
+| Python | L1 · L2 · L4 | Autônomo: LangChain/LangGraph e RPA com Selenium |
+| Celery | L1 · L2 | Tech Solutio: a IA da negociação em fluxos assíncronos |
+| PostgreSQL | L2 · L3 | Seer: APIs em Django e ETL sobre PostgreSQL |
+| Spring Boot | L2 · L5 | SigAMAES (LabES · UFES): Spring Boot com Next.js |
+
+A prova mora só no conteúdo: **não há lista de baldeações na página** (saiu a pedido, o mapa
+fala sozinho). Mesmo assim o `montarRede()` lança erro no build se faltar prova, se o marco
+citado não existir ou se a ordem dos itens não bater com a geometria.
+
+**Legenda enxuta.** Embaixo do mapa, só código e nome de cada linha (`L1 IA & Agentes`), sem
+frase de descrição. Passar o cursor numa entrada acende a linha no mapa.
+
+**Todas as estações são iguais.** Não há estação "acesa" ou "apagada" nem dica de hover: uma
+versão anterior acendia o que aparecia na stack dos cases, e isso fazia RAG e Engenharia de
+Prompt, que estão no currículo, parecerem menores.
+
+**A geometria se adapta à quantidade.** As estações se espalham pelo espaço de cada trecho, então
+dá para incluir ou tirar itens em `percurso.ts`. O que não muda sem mexer em `metro/rede.ts` é
+onde as baldeações ficam: Python e Celery nas pontas do Backend, e as descidas de Dados e
+Frontend nos índices `DESCIDA_DADOS` (2) e `DESCIDA_FRONT` (8) do Backend. Dados e Frontend têm
+que começar pela estação de onde descem.
+
+**Movimento** (CSS puro, `.metro-*` no `globals.css`, disparado pelo `[data-reveal]` do mapa):
+o trilho se desenha a velocidade constante a partir de Python, cada estação acende quando ele
+chega nela, e Dados e Frontend só partem quando o Backend alcança a baldeação deles. Depois,
+de vez em quando, um trem cruza a IA e o Backend (`<animateMotion>`). Passar o cursor numa
+linha (estação, placa ou legenda) apaga as outras, igual à rua de neon (§7.8).
+
+**Responsivo e acessível.** O mapa desenhado só existe a partir de `lg` e é `aria-hidden`. Abaixo
+disso, **e para leitor de tela em qualquer largura** (`lg:sr-only`), cada linha vira uma faixa
+vertical, como o mapa que fica em cima da porta do trem, com as baldeações marcadas.
+
+> **Armadilhas, já pagas:** (1) o `opacity` do foco por linha mira no grupo/wrapper, nunca em
+> `.metro-ponto`/`.metro-texto`, que já têm `transition-delay` da revelação; o foco herdaria
+> segundos de atraso. (2) O arco da IA tem 165 de altura no viewBox: com 140, "Django REST
+> Framework" girado encostava na linha da IA em 1024px. (3) O rótulo da descida do Frontend
+> fica na horizontal (`sob`), na faixa vazia entre o Backend e Dados. (4) O kanji `路線図` só
+> aparece a partir de `xl`: abaixo disso ele cai em cima dos rótulos da IA.
+
+Ordem das linhas — **a ordem do arsenal é a ordem da candidatura**:
 
 ```
-IA & AGENTES          ← "Onde eu trabalho hoje, todos os dias."
-BACKEND & ARQUITETURA ← "A base que sustenta tudo acima."
-DADOS & INFRA         ← "Entrego o que construo rodando, não em branch."
-AUTOMAÇÃO / RPA       ← "De onde eu vim para a IA."
-FRONTEND              ← "O suficiente para entregar inteira a interface do que eu construo."
+L1 IA & AGENTES
+L2 BACKEND & ARQUITETURA
+L3 DADOS & INFRA
+L4 AUTOMAÇÃO / RPA
+L5 FRONTEND
 ```
 
-Cada grupo tem um campo `nota`: é assim que a profundidade é dita, em palavra e sem inflar.
-Honestidade de nível evita entrevista ruim e, em vaga de pleno, conta a favor.
+As linhas não têm mais frase de descrição (o antigo campo `nota` saiu).
 
 ### 9.7 Sobre — `05 // OPERADOR`
 
@@ -1130,7 +1189,7 @@ src/
                Trajetoria, Arsenal, Sobre, Contato, Muro
     ui/        Button, SectionHeading, BrowserFrame, PhoneFrame, PhoneCarousel,
                FormularioContrato, Marquee, NomeNeon, Retrato, Hud, StatusBadge, Lambe
-    fx/        Grain, Scanlines, Rain, Fog, Skyline, RevealObserver
+    fx/        Grain, Scanlines, Rain, Fog, RevealObserver
   content/     site.ts, projetos.ts, percurso.ts, depoimentos.ts
   styles/      tokens.css, globals.css
   lib/         utils.ts, og.tsx, email.ts, convite.ts, *-tipos.ts
@@ -1197,7 +1256,7 @@ completa é `[HO] HUGO OTOCH`. Funciona em 16px (favicon: só o `[H]` com o cort
 
 | Asset | Estado |
 |---|---|
-| Skyline | SVG em camadas de profundidade — feito |
+| Fundo da hero | `public/hero.jpg`, foto gerada no tema; servida em WebP pelo `next/image` — feito |
 | Texturas | Grão SVG (§6.6), vinheta, scanline — feito |
 | Retrato | `public/otoch.png`, tratado na luz do site — feito |
 | Capturas de projeto | WebP em `public/projetos/<slug>/` — feito |
