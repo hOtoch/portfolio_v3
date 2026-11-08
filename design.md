@@ -532,7 +532,7 @@ O `<Rain>` exportado no mesmo arquivo é o preset do hero.
 | Letreiro do nome | Duas fases, ~1,1s no total (§7.4). Componente `<NomeNeon>`. |
 | Hover de card | `translateY(-4px)` + borda neon + seta `→` aparece. **Sem escala.** |
 | Hover de botão | `translateY(-2px)` + `--glow-magenta` |
-| Cursor custom | Ponto 8px + halo 32px, `mix-blend-mode: screen`, lerp .12; cresce sobre alvos clicáveis. Só em `(pointer: fine)`. |
+| Cursor custom | Retícula de HUD: quatro cantos que travam na borda do alvo, na cor do eixo, com rótulo do clique. Só em `(pointer: fine)`. Ver §7.11. |
 | Marquee | Letreiro horizontal da stack, linear infinito, **pausa no hover** (`group-hover:[animation-play-state:paused]`) |
 | Parallax | Camadas de fundo a `0.15–0.35` da velocidade do scroll. Máx. 3 camadas. |
 | Trilha do percurso | Preenche conforme o scroll, acende marco a marco (§7.9) |
@@ -656,6 +656,40 @@ O mecanismo do setor 03 (§9.4), em `components/sections/Trajetoria.tsx`.
   faixa de detecção é a fatia central da tela. O item ganha um ponto ciano. Num salto
   instantâneo pode não haver setor ativo — aceitável, o pior caso é nenhum ponto.
 
+### 7.11 Cursor de HUD
+
+`components/fx/CursorHud.tsx`, montado no `layout.tsx`. O visitante é o operador mirando o alvo.
+
+| Estado | O que aparece |
+|---|---|
+| Fora de alvo | Retícula de 28px (quatro cantos de 8px, traço 1,5px, ciano) seguindo o ponteiro com inércia `.22`, ponto claro de 4px no ponteiro exato e a coordenada `X 0412 · Y 0233` em mono, no `--color-text-mute` |
+| Sobre alvo | Os cantos **travam na borda do alvo** (folga de 6px), pegam a cor do eixo e o rótulo diz o que o clique faz. Ao travar, uma piscada de tubo de 220ms — evento, não estado. |
+| Pressionado | A folga cai para 2px: a mira "aperta" |
+| Digitação e retrato | A retícula some. Input e textarea voltam ao I-beam nativo; o retrato tem mira própria (§7.6) |
+
+**Cor:** vem do ancestral mais próximo com `data-cursor-cor="crimson|violet|magenta"` — fachadas,
+TV e ficha do case, página de case. Sem eixo, ciano.
+
+**Rótulo:** `data-cursor-rotulo` no alvo ou num ancestral vence. Sem ele, é deduzido do elemento:
+`.pdf` → `PDF ↗` · `mailto:` → `E-MAIL ↗` · `#âncora` → `IR ↓` · `/projetos/…` → `ABRIR CASE →` ·
+externo ou `_blank` → `ABRIR ↗` · `submit` → `ENVIAR` · resto → `ACIONAR`. Alvo novo que precise de
+verbo próprio ganha o atributo (a TV usa `SINTONIZAR CH 02`, `LIGAR`/`DESLIGAR`).
+
+**Regras:**
+
+- O cursor nativo só some quando o componente monta e marca `html[data-cursor-hud]`. Sem JS, em
+  toque ou antes de hidratar, o cursor do sistema continua lá.
+- Posição não passa pelo estado do React: o laço de rAF escreve `transform` direto e **para sozinho**
+  quando a retícula assenta. Com alvo travado ele continua, porque o alvo pode se mover (hover que
+  sobe 2px, carrossel). Rolar com o ponteiro parado reavalia o que está embaixo dele.
+- A coordenada tem largura fixa; o rótulo só é medido quando o comprimento do texto muda — medir
+  a cada quadro forçaria layout.
+- Alvo com mais de 140px de altura (a tela da TV) leva o rótulo junto do ponteiro, não para a borda.
+- O ponto é sempre claro, nunca na cor do eixo: sobre o botão magenta, ponto magenta sumiria.
+- Sob `prefers-reduced-motion`: sem inércia e sem piscada. A retícula continua, porque ela informa.
+- Saiu o `mix-blend-mode: screen` da spec antiga: sobre o CTA magenta ele lavava o ciano para branco
+  e a cor do eixo deixava de dizer qualquer coisa.
+
 ---
 
 ## 8. Componentes
@@ -664,7 +698,7 @@ O mecanismo do setor 03 (§9.4), em `components/sections/Trajetoria.tsx`.
 
 - Fixa no topo, `backdrop-filter: blur(16px)`, fundo `rgba(7,6,13,.72)`,
   `border-bottom: 1px solid var(--color-hairline)`.
-- Esquerda: marca (monograma `[HO]` + `HUGO OTOCH`). Centro: links em mono uppercase `ls .12em`.
+- Esquerda: marca (ícone `[H]` do favicon, `<MarcaIcone>`, + `HUGO OTOCH`). Centro: links em mono uppercase `ls .12em`.
   Direita: CTA **`FALAR COMIGO`**.
 - Item ativo: ponto ciano de 4px antes do texto.
 - Mobile: menu full-screen com fundo `--color-void`, itens em `--text-step-3`, stagger de 60ms.
@@ -843,7 +877,8 @@ camada da frente; asfalto escurecendo os últimos 30% da altura.
 **Regras deste setor:**
 
 - **O nome é o `<h1>`.** A função desce para um `<p>` em mono. Em portfólio pessoal a marca é
-  a pessoa; o cargo aparece de novo no `<title>` e no JSON-LD, então nada se perde de SEO.
+  a pessoa. O `<title>` é só `Hugo Otoch` (aba limpa, marca = pessoa); o cargo continua na
+  `description` e no JSON-LD, então nada se perde de SEO.
 - **O hero é cartão de identificação.** Título, nível, recorte da especialidade e base ficam
   visíveis de imediato — é a informação que o recrutador procura primeiro. Na v3 havia só o
   título.
@@ -1252,6 +1287,11 @@ Letreiro vertical estilo Kabukicho: as letras **H O** empilhadas dentro de um re
 chanfrado, com tubo de neon magenta (§6.3) e um filete ciano na base. Na horizontal, a marca
 completa é `[HO] HUGO OTOCH`. Funciona em 16px (favicon: só o `[H]` com o corte diagonal).
 
+**Favicon** — `src/app/icon.svg` é a fonte: placa chanfrada em `--color-void` com tubo magenta,
+o `H` em branco-neon com brilho magenta (`feGaussianBlur`) e o filete ciano na base. Dele saem o
+`favicon.ico` (16/32/48) e o `apple-icon.png` (180, fundo cheio porque o iOS aplica a própria
+máscara). Mudou o SVG, regenere os dois com `sharp` — o Next não gera `favicon.ico` por código.
+
 ### 14.2 Assets
 
 | Asset | Estado |
@@ -1259,6 +1299,7 @@ completa é `[HO] HUGO OTOCH`. Funciona em 16px (favicon: só o `[H]` com o cort
 | Fundo da hero | `public/hero.jpg`, foto gerada no tema; servida em WebP pelo `next/image` — feito |
 | Texturas | Grão SVG (§6.6), vinheta, scanline — feito |
 | Retrato | `public/otoch.png`, tratado na luz do site — feito |
+| Favicon | `src/app/icon.svg` + `favicon.ico` + `apple-icon.png` (§14.1) — feito |
 | Capturas de projeto | WebP em `public/projetos/<slug>/` — feito |
 | Currículo PDF | Gerado por script (§13.5) — feito |
 | OG image | 1200×630, gerada em runtime por `lib/og.tsx` — feito |

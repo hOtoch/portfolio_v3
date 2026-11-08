@@ -54,7 +54,7 @@ function Fachada({ eixo: servico, indice }: { eixo: Eixo; indice: number }) {
       style={{ "--reveal-atraso": `${indice * 200}ms` } as React.CSSProperties}
       className={`fachada${deslocado ? " lg:mt-10" : ""}`}
     >
-      <article className="group relative h-full">
+      <article className="group relative h-full" data-cursor-cor={servico.cor}>
         {/* Nevoa da cor do servico, atras do card */}
         <div
           aria-hidden="true"

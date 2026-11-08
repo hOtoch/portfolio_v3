@@ -88,7 +88,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       : "Capturas reais da aplicação rodando, com dados fictícios gerados pela própria massa de demonstração do projeto.";
 
   return (
-    <article className="pt-32 pb-(--spacing-section)">
+    <article className="pt-32 pb-(--spacing-section)" data-cursor-cor={eixo.cor}>
       <div className="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
         <Link
           href="/#projetos"
