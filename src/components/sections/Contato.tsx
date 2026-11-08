@@ -37,7 +37,6 @@ export function Contato() {
           numero="06"
           setor="Contato"
           titulo="Vamos conversar."
-          descricao="Se o perfil encaixa no que vocês procuram, me escreva. Respondo em até 24h — e se não for comigo, eu digo na primeira resposta em vez de ocupar a agenda de ninguém."
         />
 
         <div className="mt-(--spacing-bloco) grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-16">

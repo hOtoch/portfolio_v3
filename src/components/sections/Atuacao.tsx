@@ -138,7 +138,6 @@ export function Atuacao() {
           numero="01"
           setor="Rua de neon"
           titulo="Onde eu atuo"
-          descricao="Três eixos que se encaixam: o agente que executa a tarefa, a camada que o mantém barato e de pé, e o backend que sustenta os dois em produção."
         />
 
         <ul className="rua-de-neon mt-(--spacing-bloco) grid gap-6 md:grid-cols-2 lg:grid-cols-3">

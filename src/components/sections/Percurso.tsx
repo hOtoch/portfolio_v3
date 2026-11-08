@@ -17,7 +17,6 @@ export function Percurso() {
           numero="03"
           setor="Percurso"
           titulo="O caminho até aqui"
-          descricao="Quatro anos entre estágio, extensão, trabalho autoral e emprego remoto. Os períodos se sobrepõem porque foram vividos assim — emprego de um lado da linha, trabalho autoral e acadêmico do outro."
         />
 
         <Trajetoria />

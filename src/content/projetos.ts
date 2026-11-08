@@ -29,6 +29,12 @@ export type Decisao = { titulo: string; texto: string };
 
 export type Numero = { valor: string; rotulo: string };
 
+/** Uma etapa do fluxo principal do sistema, na ordem em que acontece. */
+export type Etapa = { titulo: string; texto: string };
+
+/** Um bloco de funcionalidade; `tela` é o `src` de uma das capturas de `desktop`. */
+export type Funcionalidade = { titulo: string; itens: readonly string[]; tela?: string };
+
 export type Projeto = {
   slug: string;
   titulo: string;
@@ -41,8 +47,14 @@ export type Projeto = {
   periodo: string;
   problema: string;
   solucao: string;
+  /** Como o sistema funciona, de ponta a ponta. */
+  fluxo?: readonly Etapa[];
+  /** O que o sistema faz, agrupado, cada grupo com a tela que o mostra. */
+  funcionalidades?: readonly Funcionalidade[];
   /** O bloco que um tech lead vai ler. Decisao + porque. */
   decisoes: readonly Decisao[];
+  /** Testes, CI, seguranca e deploy — o que sustenta o codigo. */
+  qualidade?: readonly string[];
   stack: readonly string[];
   /** So quando ha numero medido (design.md §17.2). */
   numeros?: readonly Numero[];
@@ -51,8 +63,6 @@ export type Projeto = {
   /** Capturas em 390x844 @2x, para a moldura de celular. */
   mobile?: readonly Tela[];
   url?: string;
-  /** Credito de origem quando o projeto parte de codigo de outra pessoa. */
-  atribuicao?: string;
   /** Ocupa 2 colunas no grid. */
   destaque?: boolean;
 };
@@ -67,11 +77,104 @@ export const projetos: readonly Projeto[] = [
     natureza: "autoral",
     status: "privado",
     origem: "Projeto autoral",
-    periodo: "Jul 2026 – Set 2026",
+    periodo: "Jul 2026 → Set 2026",
     problema:
       "Quem vende site para pequeno negócio gasta horas achando empresas que precisam de um, descobrindo se o site atual é ruim, escrevendo mensagem que não pareça spam e lembrando de cada follow-up.",
     solucao:
       "Sistema que fecha o ciclo inteiro: capta no Google Maps e no Instagram, qualifica analisando o site de cada empresa, dá score de 0 a 100, gera o roteiro da conversa com um fluxo agêntico no Claude, dispara o primeiro contato pelo WhatsApp a partir de uma VPS e mostra num dashboard qual nicho, região e canal estão trazendo resposta.",
+    fluxo: [
+      {
+        titulo: "Captar",
+        texto: "Busca no Google Maps por nicho e cidade, ou por pino e raio no mapa, e extrai quem comentou em posts do Instagram.",
+      },
+      {
+        titulo: "Qualificar",
+        texto: "Analisa o site de cada empresa, monta o raio-X e dá um score de 0 a 100 para ordenar a fila.",
+      },
+      {
+        titulo: "Preparar a conversa",
+        texto: "O Claude pesquisa o lead na web e devolve o roteiro completo, com ramificações e objeções.",
+      },
+      {
+        titulo: "Disparar",
+        texto: "A VPS envia o primeiro contato pelo WhatsApp em horário comercial e recebe as respostas por webhook.",
+      },
+      {
+        titulo: "Medir",
+        texto: "O dashboard mostra qual nicho, região e canal respondem, e onde vale parar de insistir.",
+      },
+    ],
+    funcionalidades: [
+      {
+        titulo: "Captação e qualificação",
+        tela: "/projetos/prospecto-sh/05-lead-detalhe.webp",
+        itens: [
+          "Busca no Google Maps por nicho + cidade ou desenhando pinos com raio num mapa, num catálogo de mais de 230 nichos",
+          "Fonte de dados plugável: scraper local ou Google Places API",
+          "Análise do site de cada empresa: sem site, certificado inválido, sem HTTPS, conteúdo misto, não adaptado ao celular",
+          "Raio-X do site com 9 itens, como WhatsApp, telefone clicável, mapa e descrição para o Google",
+          "Score de 0 a 100 para ordenar a fila de abordagem",
+        ],
+      },
+      {
+        titulo: "Copiloto de conversa com Claude",
+        tela: "/projetos/prospecto-sh/06-copiloto-ia.webp",
+        itens: [
+          "Primeira chamada com busca e leitura na web, com teto de 6 buscas e 3 leituras, e um dossiê em que cada fato carrega a URL da fonte",
+          "Segunda chamada sem ferramentas devolve as 7 etapas da conversa em JSON validado por schema",
+          "Cada etapa traz as mensagens prontas e as ramificações: se o lead responder X, responda Y",
+          "Objeções prováveis e alertas do que conferir antes de enviar, como grafia do nome e fatos com fonte duvidosa",
+          "Custo estimado de cada geração na tela, e o resultado fica salvo para não pagar de novo",
+        ],
+      },
+      {
+        titulo: "Leads do Instagram classificados por IA",
+        tela: "/projetos/prospecto-sh/07-instagram-classificacao-ia.webp",
+        itens: [
+          "Quem comentou num post vira lead, com bio, seguidores e tipo de conta",
+          "O modelo devolve prioridade, nicho detectado, justificativa e uma sugestão de DM na voz do vendedor",
+          "Formato rígido e validado; \"descartado\" só sai quando não há nenhum indício de negócio real",
+          "Classificação a temperatura 0,2 e copy a 0,9",
+        ],
+      },
+      {
+        titulo: "CRM e rotina de prospecção",
+        tela: "/projetos/prospecto-sh/04-leads-kanban.webp",
+        itens: [
+          "Lista e kanban com arrastar e soltar, histórico de status e tags",
+          "Follow-ups com cadência crescente, que não repetem argumento nem estrutura da mensagem anterior",
+          "Tarefas do dia, meta semanal e modo foco para sessões de prospecção",
+          "Exportação em CSV e diagnóstico do site em PDF para enviar ao cliente",
+        ],
+      },
+      {
+        titulo: "Disparo automático pelo WhatsApp",
+        tela: "/projetos/prospecto-sh/08-disparo-automatico.webp",
+        itens: [
+          "Roda numa VPS e envia o primeiro contato só no horário comercial, com intervalo mínimo e folga aleatória entre envios",
+          "Verifica antes se o número tem WhatsApp e pausa sozinho após falhas seguidas",
+          "Recebe por webhook a entrega, a leitura e a resposta, e marca automaticamente quem respondeu",
+          "Reserva atômica no banco antes de cada envio",
+        ],
+      },
+      {
+        titulo: "Dashboard de desempenho",
+        tela: "/projetos/prospecto-sh/01-dashboard.webp",
+        itens: [
+          "Resposta, fechamento e descarte por nicho, por região, por canal e por tipo de lead",
+          "Cidade e bairro extraídos do endereço de cada lead",
+          "Ritmo semanal, funil com a taxa de cada etapa e mapa de calor nicho × cidade",
+          "Destaques automáticos com amostra mínima: o nicho que mais responde, leads parados, onde parar de insistir",
+        ],
+      },
+    ],
+    qualidade: [
+      "430+ testes automatizados com pytest",
+      "Chaves de API guardadas no cofre do sistema operacional (keyring), nunca em arquivo",
+      "Webhook do WhatsApp autenticado por token",
+      "App de desktop para Windows com atualização automática (Electron + electron-updater, PyInstaller, Inno Setup)",
+      "Disparador em VPS Linux com systemd e HTTPS pelo Caddy",
+    ],
     decisoes: [
       {
         titulo: "Saber quando não usar IA",
@@ -96,7 +199,7 @@ export const projetos: readonly Projeto[] = [
       {
         titulo: "Temperatura por tarefa",
         texto:
-          "Copy roda a 0,9 e classificação a 0,2. E o fechamento do follow-up é sorteado no código, não pelo modelo — pedir ao LLM que sorteie faz ele repetir sempre o mesmo final e inventar horário.",
+          "Copy roda a 0,9 e classificação a 0,2. E o fechamento do follow-up é sorteado no código, não pelo modelo. Pedir ao LLM que sorteie faz ele repetir sempre o mesmo final e inventar horário.",
       },
     ],
     stack: [
@@ -123,11 +226,11 @@ export const projetos: readonly Projeto[] = [
     ],
     desktop: [
       {
-        src: "/projetos/prospecto-sh/08-copiloto-ia.webp",
+        src: "/projetos/prospecto-sh/06-copiloto-ia.webp",
         alt: "Prospecto.sh: copiloto com Claude mostrando o roteiro da conversa com ramificações, alertas, objeções e o custo da geração",
       },
       {
-        src: "/projetos/prospecto-sh/09-instagram-classificacao-ia.webp",
+        src: "/projetos/prospecto-sh/07-instagram-classificacao-ia.webp",
         alt: "Prospecto.sh: perfis do Instagram classificados pela IA, com prioridade, nicho detectado e sugestão de DM",
       },
       {
@@ -135,24 +238,30 @@ export const projetos: readonly Projeto[] = [
         alt: "Prospecto.sh: painel de desempenho com indicadores, destaques automáticos, ritmo semanal e funil",
       },
       {
-        src: "/projetos/prospecto-sh/07-lead-detalhe.webp",
-        alt: "Prospecto.sh: detalhe do lead com estratégia de abordagem, mensagem pronta e raio-X do site",
+        src: "/projetos/prospecto-sh/05-lead-detalhe.webp",
+        alt: "Prospecto.sh: detalhe do lead com estratégia de abordagem gerada por IA, ganchos e ações de contato",
       },
       {
-        src: "/projetos/prospecto-sh/10-disparo-automatico.webp",
-        alt: "Prospecto.sh: disparo automático pelo WhatsApp com estado, fila, configuração e webhook",
+        src: "/projetos/prospecto-sh/08-disparo-automatico.webp",
+        alt: "Prospecto.sh: disparo automático pelo WhatsApp com fila, horário de envio, conexão e webhook",
+      },
+      {
+        src: "/projetos/prospecto-sh/02-desempenho-por-nicho.webp",
+        alt: "Prospecto.sh: ritmo semanal da prospecção, funil de conversão e desempenho por nicho",
       },
       {
         src: "/projetos/prospecto-sh/03-dashboard-regioes.webp",
         alt: "Prospecto.sh: desempenho por região, canal e tipo de lead, com mapa de calor nicho por cidade",
       },
       {
-        src: "/projetos/prospecto-sh/06-leads-kanban.webp",
-        alt: "Prospecto.sh: CRM em kanban, de novo a fechado, com arrastar e soltar",
+        src: "/projetos/prospecto-sh/04-leads-kanban.webp",
+        alt: "Prospecto.sh: CRM em kanban, de novo a fechado, com os indicadores dos leads do Google Maps",
+      },
+      {
+        src: "/projetos/prospecto-sh/09-tarefas-do-dia.webp",
+        alt: "Prospecto.sh: tarefas do dia com os follow-ups vencidos e o atalho para o WhatsApp",
       },
     ],
-    atribuicao:
-      "Fork evoluído do ProspectOS, projeto open source (MIT) de nando0x, que trouxe a base de captação, CRM e IA multiprovedor. Sobre ela construí o copiloto de conversa com Claude, o disparo automático pelo WhatsApp com webhook e deploy em VPS, o dashboard de desempenho por nicho e região, e a identidade visual.",
     destaque: true,
   },
   {
@@ -193,9 +302,101 @@ export const projetos: readonly Projeto[] = [
     origem: "Projeto autoral",
     periodo: "Abr 2026 → atual",
     problema:
-      "Uma pelada semanal entre amigos tem caixa, mensalidade, convidado, presença e discussão sobre time desequilibrado — tudo isso vivia em planilha e grupo de WhatsApp.",
+      "Uma pelada semanal entre amigos tem caixa, mensalidade, convidado, presença e discussão sobre time desequilibrado. Tudo isso vivia em planilha e grupo de WhatsApp.",
     solucao:
       "Aplicação web com dois níveis de acesso que cuida do caixa do grupo, da lista de presença, do sorteio de times equilibrados por nível técnico e de um sistema de avaliação entre jogadores que recalcula o overall de cada um a cada rodada, no estilo FIFA.",
+    fluxo: [
+      {
+        titulo: "Presença",
+        texto: "Mensalistas confirmam presença e o administrador inclui os convidados avulsos da rodada.",
+      },
+      {
+        titulo: "Sorteio",
+        texto: "O balanceador divide os confirmados pelo menor desnível de overall e de defensivos entre os times.",
+      },
+      {
+        titulo: "Jogo",
+        texto: "A pelada é encerrada com o time vencedor, e gols e assistências entram pela planilha da rodada.",
+      },
+      {
+        titulo: "Votação",
+        texto: "Abre uma janela de 24 horas para os jogadores se avaliarem com notas de 1 a 10, pelo celular.",
+      },
+      {
+        titulo: "Overall novo",
+        texto: "Quando a janela fecha, o overall de cada jogador é recalculado e o ranking se atualiza.",
+      },
+    ],
+    funcionalidades: [
+      {
+        titulo: "Caixa do grupo",
+        tela: "/projetos/pelada-sofredores/01-dashboard-financeiro.webp",
+        itens: [
+          "Saldo consolidado, entradas, saídas e fluxo mensal dos últimos meses",
+          "Lançamentos categorizados, com status lançado, pendente ou estornado",
+          "Cobrança por mês de referência: quem pagou, quem está parcial, quem está devendo",
+          "Taxa avulsa de convidado com responsável pela cobrança: quem levou o convidado responde por ele",
+          "Exportação do extrato e do relatório da temporada em CSV e JSON",
+        ],
+      },
+      {
+        titulo: "Sorteio de times equilibrados",
+        tela: "/projetos/pelada-sofredores/02-times-sorteados.webp",
+        itens: [
+          "Algoritmo próprio que busca o menor desnível entre os times, considerando overall e equilíbrio de defensivos",
+          "Busca exata com backtracking até 16 jogadores; acima disso, heurística gulosa com refinamento por troca de pares",
+          "Troca manual entre times, para quando o algoritmo acerta a conta mas erra o clima",
+          "Times escalados em campo para todo mundo ver antes do jogo",
+        ],
+      },
+      {
+        titulo: "Avaliação entre jogadores e overall dinâmico",
+        tela: "/projetos/pelada-sofredores/07-notas.webp",
+        itens: [
+          "Janela de 24 horas depois da pelada, com notas de 1 a 10, entre os próprios times ou geral",
+          "Votação feita para o celular: um jogador por vez, slider, avanço automático e contagem regressiva",
+          "A média vira uma nota da comunidade e o overall caminha 25% nessa direção, sempre entre 0 e 99",
+          "Log de votos auditável; o administrador acompanha e fecha a janela, mas não vota",
+        ],
+      },
+      {
+        titulo: "Ranking da temporada",
+        tela: "/projetos/pelada-sofredores/03-ranking.webp",
+        itens: [
+          "Pódio e tabela de overall com faixas bronze, prata, ouro e diamante",
+          "Artilheiros, assistentes e maiores vencedores acumulados na temporada",
+          "Importação e exportação da planilha da rodada em .xlsx para lançar gols e assistências em lote",
+          "Rankings de presença e de pagamento para o administrador",
+        ],
+      },
+      {
+        titulo: "Portal do jogador",
+        tela: "/projetos/pelada-sofredores/04-portal-do-jogador.webp",
+        itens: [
+          "Overall atual, classificação e gráfico de evolução ao longo da temporada",
+          "Time da semana com os melhores avaliados da última pelada, desenhado no campo",
+          "Pendências pessoais: mensalidade do mês e taxas dos convidados que ele levou",
+          "Saldo do grupo e os próprios lançamentos, para o caixa ser transparente para todos",
+        ],
+      },
+      {
+        titulo: "Elenco e contas de acesso",
+        tela: "/projetos/pelada-sofredores/05-elenco.webp",
+        itens: [
+          "Jogadores em cards no estilo FIFA, com posição, camisa, mensalidade, status e overall",
+          "Contas de acesso separadas do cadastro de jogador, com vínculo entre os dois",
+          "Reset de senha e senha temporária, que obriga a troca no primeiro acesso",
+          "Cadastro público: a conta só vota depois que um administrador a vincula a um jogador do elenco",
+        ],
+      },
+    ],
+    qualidade: [
+      "62 testes com pytest, com o balanceador de times testado isoladamente",
+      "CI no GitHub Actions a cada PR: lint, format, migrations, system checks, pytest, ESLint, typecheck e build",
+      "Testes de ponta a ponta com Playwright, que sobem backend e frontend e rodam o seed antes",
+      "Hooks de pre-commit com Ruff, Prettier, ESLint e checagem de chave privada",
+      "Docker Compose com PostgreSQL, backend e frontend; deploy no Render com checklist de staging versionado",
+    ],
     decisoes: [
       {
         titulo: "Busca exata até onde ela cabe",
@@ -205,7 +406,7 @@ export const projetos: readonly Projeto[] = [
       {
         titulo: "Snapshot em vez de recálculo retroativo",
         texto:
-          "O overall usado no sorteio fica congelado na presença daquela pelada. O passado não muda quando o presente muda — histórico que se reescreve sozinho é histórico que mente.",
+          "O overall usado no sorteio fica congelado na presença daquela pelada. O passado não muda quando o presente muda: histórico que se reescreve sozinho é histórico que mente.",
       },
       {
         titulo: "Estorno em vez de delete",
@@ -215,7 +416,7 @@ export const projetos: readonly Projeto[] = [
       {
         titulo: "Monolito de propósito",
         texto:
-          "O público real são algumas dezenas de pessoas. Nada de microsserviço, fila ou cache distribuído: o custo apareceria e o benefício não. A separação acontece onde importa — o cálculo de balanceamento vive em módulo próprio, testado isoladamente.",
+          "O público real são algumas dezenas de pessoas. Nada de microsserviço, fila ou cache distribuído: o custo apareceria e o benefício não. A separação acontece onde importa: o cálculo de balanceamento vive em módulo próprio, testado isoladamente.",
       },
       {
         titulo: "Autorização sempre no servidor",
@@ -245,29 +446,37 @@ export const projetos: readonly Projeto[] = [
     ],
     desktop: [
       {
-        src: "/projetos/pelada-sofredores/02-dashboard-financeiro.webp",
-        alt: "Peladinhas Sofredores: dashboard financeiro com saldo consolidado, entradas, saídas e fluxo mensal",
+        src: "/projetos/pelada-sofredores/01-dashboard-financeiro.webp",
+        alt: "Peladinhas Sofredores: dashboard financeiro com saldo, pendências, adimplência e convidados a pagar",
       },
       {
-        src: "/projetos/pelada-sofredores/03-pelada-times.webp",
-        alt: "Peladinhas Sofredores: pré-jogo com lista de presença e os times já sorteados pelo algoritmo",
+        src: "/projetos/pelada-sofredores/02-times-sorteados.webp",
+        alt: "Peladinhas Sofredores: pelada do dia com os dois times sorteados pelo algoritmo, escalados em campo",
       },
       {
-        src: "/projetos/pelada-sofredores/04-ranking-esportivo.webp",
-        alt: "Peladinhas Sofredores: ranking com pódio, tabela de overall e artilharia da temporada",
+        src: "/projetos/pelada-sofredores/03-ranking.webp",
+        alt: "Peladinhas Sofredores: ranking com pódio e tabela de overall por faixa",
       },
       {
-        src: "/projetos/pelada-sofredores/09-portal-do-jogador.webp",
+        src: "/projetos/pelada-sofredores/04-portal-do-jogador.webp",
         alt: "Peladinhas Sofredores: portal do jogador com overall, gráfico de evolução e time da semana",
       },
       {
         src: "/projetos/pelada-sofredores/05-elenco.webp",
-        alt: "Peladinhas Sofredores: elenco em cards no estilo FIFA, com posição, camisa e overall",
+        alt: "Peladinhas Sofredores: elenco em cards no estilo FIFA, com posição, status e overall",
+      },
+      {
+        src: "/projetos/pelada-sofredores/06-pre-jogo.webp",
+        alt: "Peladinhas Sofredores: pré-jogo com a pelada ativa, lista de presença e histórico de peladas",
+      },
+      {
+        src: "/projetos/pelada-sofredores/07-notas.webp",
+        alt: "Peladinhas Sofredores: votação de notas da rodada com contagem regressiva e log de votos",
       },
     ],
     mobile: [
       {
-        src: "/projetos/pelada-sofredores/mobile-06-votacao.webp",
+        src: "/projetos/pelada-sofredores/mobile-01-votacao.webp",
         alt: "Peladinhas Sofredores no celular: votação de notas, um jogador por vez, com slider e contagem regressiva",
       },
       {
@@ -275,8 +484,8 @@ export const projetos: readonly Projeto[] = [
         alt: "Peladinhas Sofredores no celular: dashboard financeiro do grupo",
       },
       {
-        src: "/projetos/pelada-sofredores/mobile-03-pelada-times.webp",
-        alt: "Peladinhas Sofredores no celular: times sorteados para a rodada",
+        src: "/projetos/pelada-sofredores/mobile-03-pre-jogo.webp",
+        alt: "Peladinhas Sofredores no celular: pré-jogo com a pelada ativa e a lista de presença",
       },
       {
         src: "/projetos/pelada-sofredores/mobile-04-ranking.webp",
@@ -289,6 +498,204 @@ export const projetos: readonly Projeto[] = [
     ],
   },
   {
+    slug: "myvitri",
+    titulo: "MyVitri",
+    subtitulo:
+      "Vitrine pública onde creators juntam os cupons, produtos e kits que indicam num link só, para a bio.",
+    eixo: "plataforma",
+    natureza: "autoral",
+    status: "no-ar",
+    origem: "Cofundador",
+    periodo: "Nov 2026 → atual",
+    problema:
+      "Creator que divulga marca responde o dia inteiro \"qual é o cupom?\" e \"onde compra?\". Os códigos ficam espalhados em stories que somem em 24 horas, e ninguém sabe qual indicação está dando resultado.",
+    solucao:
+      "Plataforma em que a creator monta uma vitrine com os cupons das marcas, os produtos que usa, com o preço já calculado com o desconto, e kits. A vitrine fica num link curto (myvitri.com/seunome) para a bio do Instagram e do TikTok. O seguidor copia o cupom e vai direto para a loja oficial; o MyVitri não vende nada. A creator ainda tem uma página de métricas com visitas, cliques e cupons copiados.",
+    fluxo: [
+      {
+        titulo: "Criar",
+        texto: "A creator escolhe nome e link e entra com e-mail e senha ou com o Google.",
+      },
+      {
+        titulo: "Montar",
+        texto: "No editor, cadastra cupons, importa produtos colando o link da loja e monta kits. O rascunho se salva sozinho.",
+      },
+      {
+        titulo: "Publicar",
+        texto: "Um clique grava a vitrine inteira de uma vez, numa transação do Postgres.",
+      },
+      {
+        titulo: "Divulgar",
+        texto: "O link vai para a bio, com imagem para stories e prévia de link geradas pelo servidor.",
+      },
+      {
+        titulo: "Medir",
+        texto: "Cada visita e cada clique vira um evento anônimo, e a página de métricas mostra o que funciona.",
+      },
+    ],
+    funcionalidades: [
+      {
+        titulo: "Vitrine pública",
+        tela: "/projetos/myvitri/02-vitrine.webp",
+        itens: [
+          "Link curto por creator, com capa, foto, chamada e atalhos para cupons, produtos e kits",
+          "Cupom com o código à mostra e um botão que copia e já abre a loja oficial da marca",
+          "Produtos com o preço já calculado com o cupom ligado a eles, filtro por categoria e busca",
+          "Favoritar e comentar pedem login, mas não pedem vitrine: quem segue também tem conta",
+        ],
+      },
+      {
+        titulo: "Página inicial e descoberta",
+        tela: "/projetos/myvitri/04-categorias.webp",
+        itens: [
+          "A página inicial reúne as vitrines, os cupons que estão valendo, os produtos por categoria e as marcas",
+          "Cada produto mostra quem o indica e leva para a vitrine dessa pessoa",
+          "Busca sem acento em creators, marcas e produtos, ordenada por igual, começa com, contém e semelhança",
+          "Ranking das vitrines mais clicadas do dia, no fuso de São Paulo",
+        ],
+      },
+      {
+        titulo: "Editor e publicação",
+        itens: [
+          "Rascunho salvo sozinho 800 ms depois da última mudança, separado da vitrine no ar",
+          "Importação de produto colando o link da loja: nome, marca, foto, preço e se está esgotado",
+          "Busca automática do logo da marca no site da loja",
+          "Publicar valida tudo com Zod e grava a vitrine inteira numa transação só",
+        ],
+      },
+      {
+        titulo: "Métricas para a creator",
+        itens: [
+          "Visitas, cliques para a loja e cupons copiados em 7, 30 ou 90 dias",
+          "Variação contra o período anterior de mesma duração, gráfico dia a dia e funil",
+          "Produtos mais clicados, cupons mais copiados e posição entre as vitrines do dia",
+          "Avisos de cupom vencendo em até 7 dias e de produto esgotado, com atalho para o editor",
+        ],
+      },
+      {
+        titulo: "Conta e acesso",
+        tela: "/projetos/myvitri/07-criar-vitrine.webp",
+        itens: [
+          "Criar a conta e a vitrine na mesma tela, com e-mail e senha ou com o Google",
+          "Confirmação de e-mail e troca de senha por link, com PKCE",
+          "Depois de entrar, a pessoa volta para a página em que clicou em Entrar",
+          "Mensagens de erro que não revelam se um e-mail está cadastrado",
+        ],
+      },
+    ],
+    decisoes: [
+      {
+        titulo: "Autorização no banco, não na aplicação",
+        texto:
+          "Toda tabela tem Row Level Security, e o app nunca usa chave de serviço: só a chave publicável, com a sessão de quem está logado. Cada Server Action confere a sessão antes de mexer em dado, e a RLS é a segunda barreira. Se um dia uma action esquecer a checagem, o Postgres ainda recusa.",
+      },
+      {
+        titulo: "Rascunho separado e publicação atômica",
+        texto:
+          "A creator edita um rascunho que se salva sozinho numa tabela própria, sem tocar na vitrine que os seguidores estão vendo. Publicar chama uma função do Postgres que troca cupons, produtos e kits numa transação só, na ordem que as chaves estrangeiras exigem. Ou a vitrine nova entra inteira, ou nada muda.",
+      },
+      {
+        titulo: "Cache por tag, invalidado ao publicar",
+        texto:
+          "A vitrine pública é lida com \"use cache\" do Next 16 e fica em cache por horas, porque só muda quando a creator publica, e a publicação invalida a tag daquela vitrine. A leitura cacheada usa um cliente do Supabase sem cookies, já que o resultado é o mesmo para todos os visitantes. O ranking do dia muda a cada clique, então expira em minutos.",
+      },
+      {
+        titulo: "Importar produto sem abrir a rede interna",
+        texto:
+          "Colar um link faz o servidor baixar uma página que o usuário escolheu, o que é SSRF esperando acontecer. Antes de cada requisição, e de novo a cada redirecionamento, o servidor resolve o DNS e recusa endereço privado, com teto de 3 redirecionamentos e 1,5 MB. A leitura tenta JSON-LD, depois as metatags Open Graph, depois a Brave Search quando a loja bloqueia robôs, e por fim só o que o endereço diz.",
+      },
+      {
+        titulo: "Métricas anônimas sem expor números alheios",
+        texto:
+          "O evento sai do navegador por sendBeacon e só entra no banco se a vitrine existir e o horário estiver a um minuto do relógio do servidor. Só a dona lê os eventos da própria vitrine; o ranking público passa por uma função que devolve a ordem das vitrines, nunca as contagens.",
+      },
+      {
+        titulo: "O autor do comentário nunca vem do cliente",
+        texto:
+          "Um trigger do Postgres preenche autor, nome, foto e data a partir do token da sessão, ignorando o que o navegador mandou, e recusa o sexto comentário da mesma pessoa no mesmo minuto.",
+      },
+    ],
+    qualidade: [
+      "TypeScript strict, com o conteúdo da vitrine validado por schema Zod antes de publicar",
+      "Row Level Security em todas as tabelas e nos buckets do Storage, sem chave de serviço no app",
+      "Proteção contra SSRF em toda requisição que o servidor faz a um endereço vindo do usuário",
+      "14 migrações SQL versionadas, aplicadas em ordem",
+      "No ar na Vercel, com banco, login e arquivos no Supabase",
+    ],
+    stack: [
+      "Next.js 16",
+      "React 19",
+      "TypeScript",
+      "Tailwind CSS 4",
+      "Zod",
+      "Supabase",
+      "PostgreSQL",
+      "Row Level Security",
+      "Supabase Auth",
+      "sharp",
+      "Brave Search API",
+      "Vercel",
+    ],
+    numeros: [
+      { valor: "~13k", rotulo: "linhas de código" },
+      { valor: "14", rotulo: "migrações SQL" },
+      { valor: "0", rotulo: "chaves de serviço no app" },
+    ],
+    desktop: [
+      {
+        src: "/projetos/myvitri/01-landing.webp",
+        alt: "MyVitri: página inicial com a chamada \"Indicado por gente. Não pelo algoritmo.\" e os botões de criar e explorar vitrines",
+      },
+      {
+        src: "/projetos/myvitri/02-vitrine.webp",
+        alt: "MyVitri: vitrine pública de uma creator, com capa, foto, chamada e o botão de favoritar",
+      },
+      {
+        src: "/projetos/myvitri/03-vitrine-produtos.webp",
+        alt: "MyVitri: produtos da vitrine, com filtro por categoria e busca",
+      },
+      {
+        src: "/projetos/myvitri/07-criar-vitrine.webp",
+        alt: "MyVitri: criar a vitrine com nome, link, e-mail e senha ou com o Google",
+      },
+      {
+        src: "/projetos/myvitri/04-categorias.webp",
+        alt: "MyVitri: produtos por categoria na página inicial, cada um com quem o indica",
+      },
+      {
+        src: "/projetos/myvitri/05-cupons.webp",
+        alt: "MyVitri: cupons que estão valendo agora, com a creator que divulga cada um",
+      },
+      {
+        src: "/projetos/myvitri/06-marcas.webp",
+        alt: "MyVitri: marcas indicadas e o melhor cupom de cada uma",
+      },
+      {
+        src: "/projetos/myvitri/08-entrar.webp",
+        alt: "MyVitri: entrar com e-mail e senha ou com o Google",
+      },
+    ],
+    mobile: [
+      {
+        src: "/projetos/myvitri/mobile-01-landing.webp",
+        alt: "MyVitri no celular: página inicial",
+      },
+      {
+        src: "/projetos/myvitri/mobile-02-vitrine.webp",
+        alt: "MyVitri no celular: vitrine pública de uma creator",
+      },
+      {
+        src: "/projetos/myvitri/mobile-03-vitrine-cupons.webp",
+        alt: "MyVitri no celular: cupom com o botão de copiar e ir para a loja, e os produtos logo abaixo",
+      },
+      {
+        src: "/projetos/myvitri/mobile-04-criar-vitrine.webp",
+        alt: "MyVitri no celular: criar a vitrine",
+      },
+    ],
+    url: "https://www.myvitri.com/",
+  },
+  {
     slug: "agentes-autonomos-langgraph",
     titulo: "Agentes autônomos e chatbots com LLM",
     subtitulo: "Agentes em LangChain e LangGraph integrados a fluxos de trabalho empresariais.",
@@ -296,7 +703,7 @@ export const projetos: readonly Projeto[] = [
     natureza: "cliente",
     status: "confidencial",
     origem: "Clientes · trabalho autônomo",
-    periodo: "Jan 2024 – Ago 2025",
+    periodo: "Jan 2024 → Ago 2025",
     problema:
       "Fluxos de trabalho empresariais que exigiam alguém lendo, interpretando e respondendo manualmente o dia inteiro.",
     solucao:
@@ -312,13 +719,13 @@ export const projetos: readonly Projeto[] = [
   },
   {
     slug: "sigamaes-ufes",
-    titulo: "SigAMAES — plataforma do LabES/UFES",
+    titulo: "SigAMAES, plataforma do LabES/UFES",
     subtitulo: "Liderança técnica de uma plataforma feita para ser mantida por quem vem depois.",
     eixo: "plataforma",
     natureza: "academico",
     status: "confidencial",
     origem: "Projeto de extensão · LabES/UFES",
-    periodo: "Fev 2025 – Jan 2026",
+    periodo: "Fev 2025 → Jan 2026",
     problema:
       "O projeto precisava de uma plataforma web própria, construída para ser mantida por outros estudantes depois da minha saída.",
     solucao:
@@ -340,7 +747,7 @@ export const projetos: readonly Projeto[] = [
     natureza: "profissional",
     status: "confidencial",
     origem: "Seer",
-    periodo: "Ago 2025 – Mar 2026",
+    periodo: "Ago 2025 → Mar 2026",
     problema:
       "Dados espalhados em várias fontes e relatórios montados à mão, sempre atrasados em relação à decisão.",
     solucao:
@@ -355,92 +762,3 @@ export const projetos: readonly Projeto[] = [
     stack: ["Django", "PostgreSQL", "Processos de ETL"],
   },
 ] as const;
-
-/* ── Trabalhos de web ────────────────────────────────────────────────────── */
-
-/**
- * Sites de cliente entregues. Ficam numa faixa compacta no fim do setor, fora
- * do grid principal: provam entrega de frontend, mas nao e o eixo da
- * candidatura e competem pela atencao do recrutador.
- *
- * `telas` sao capturas reais em 390x844 @2x (iPhone), em /public/projetos.
- */
-export type Vitrine = {
-  slug: string;
-  titulo: string;
-  segmento: string;
-  url: string;
-  resumo: string;
-  destaques: readonly string[];
-  stack: readonly string[];
-  telas: readonly Tela[];
-};
-
-export const vitrines: readonly Vitrine[] = [
-  {
-    slug: "sentir-terapias",
-    titulo: "Sentir Terapias Holísticas",
-    segmento: "Terapias holísticas · Serra/ES",
-    url: "https://sentir-terapias.vercel.app/",
-    resumo:
-      "Site de apresentação de uma terapeuta que atende online e presencialmente. A página tem o ritmo do atendimento: tipografia serifada, muito respiro e nenhuma pressa para chegar ao botão.",
-    destaques: [
-      "Quatro terapias, cada uma com agendamento direto no WhatsApp",
-      "Avaliações públicas do Google em carrossel",
-      "Rolagem suave e entradas animadas com GSAP",
-      "Endereço e mapa do atendimento presencial",
-    ],
-    stack: ["HTML", "CSS", "JavaScript", "GSAP"],
-    telas: [
-      {
-        src: "/projetos/sentir-terapias/01-inicio.webp",
-        alt: "Sentir Terapias: abertura com o título “Um espaço para voltar ao seu eixo”",
-      },
-      {
-        src: "/projetos/sentir-terapias/02-terapias.webp",
-        alt: "Sentir Terapias: seção “Quatro caminhos para o mesmo repouso”, começando pelo Reiki",
-      },
-      {
-        src: "/projetos/sentir-terapias/03-reiki.webp",
-        alt: "Sentir Terapias: detalhe do Reiki Tradicional com botão de agendamento",
-      },
-      {
-        src: "/projetos/sentir-terapias/04-depoimentos.webp",
-        alt: "Sentir Terapias: carrossel de avaliações do Google",
-      },
-    ],
-  },
-  {
-    slug: "pet-park",
-    titulo: "Pet Park",
-    segmento: "Creche e hotel para cães · Vila Velha/ES",
-    url: "https://pet-park-seven.vercel.app/",
-    resumo:
-      "Site de uma creche e hotel para cães. A página responde às perguntas de quem vai deixar o cachorro com alguém: quem cuida, como é o espaço e como começar.",
-    destaques: [
-      "Botão de WhatsApp fixo na base da tela do celular",
-      "Serviços, equipe e fotos reais do espaço",
-      "Nota do Google e perguntas frequentes",
-      "Animações de rolagem com GSAP",
-    ],
-    stack: ["React", "Vite", "GSAP"],
-    telas: [
-      {
-        src: "/projetos/pet-park/01-inicio.webp",
-        alt: "Pet Park: abertura com o título “Enquanto você trabalha, ele tem o dia dele”",
-      },
-      {
-        src: "/projetos/pet-park/02-equipe.webp",
-        alt: "Pet Park: seção “Motivos para deixar seu cachorro aqui” com foto da equipe",
-      },
-      {
-        src: "/projetos/pet-park/03-espaco.webp",
-        alt: "Pet Park: seção “Onde ele vai passar o dia” com fotos do espaço",
-      },
-      {
-        src: "/projetos/pet-park/04-contato.webp",
-        alt: "Pet Park: contato com WhatsApp, telefone e endereço",
-      },
-    ],
-  },
-];

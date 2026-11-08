@@ -9,8 +9,9 @@
  * um lado, autoral/academico do outro) justamente para a sobreposicao aparecer
  * como argumento em vez de erro.
  *
- * Ordem decrescente: recrutador le de cima para baixo e o cargo atual tem que
- * ser o primeiro item.
+ * Ordem decrescente pelo inicio: recrutador le de cima para baixo e o cargo
+ * atual tem que ser o primeiro item. A formacao entra no mes em que foi
+ * concluida (fev 2026), entre a Tech Solutio e a Seer.
  */
 
 export type TipoMarco = "emprego" | "autoral" | "academico" | "formacao";
@@ -30,8 +31,8 @@ export type Marco = {
   /** 2–3 marcas curtas, todas verificaveis no curriculo. */
   marcas: readonly string[];
   stack: readonly string[];
-  /** Slug do case relacionado em `projetos.ts`, quando existe. */
-  projeto?: string;
+  /** Link extra do marco, como o PDF do TCC na formação. */
+  link?: { rotulo: string; href: string };
 };
 
 export const trajetoria: readonly Marco[] = [
@@ -49,14 +50,30 @@ export const trajetoria: readonly Marco[] = [
       "Integração de modelos de IA conduzindo interações autônomas com clientes inadimplentes.",
       "Fluxos assíncronos de alta performance com Celery, infraestrutura em Docker e modelagem em MSSQL.",
     ],
-    stack: ["Python", "Celery", "Docker", "MSSQL"],
-    projeto: "plataforma-ia-cobrancas",
+    stack: ["Python", "OpenAI API", "LLM-as-a-judge", "Celery", "Docker", "MSSQL"],
+  },
+  {
+    slug: "ufes",
+    inicio: "2026-02",
+    fim: "2026-02",
+    periodo: "Fev 2026",
+    organizacao: "UFES",
+    funcao: "Bacharelado em Engenharia de Computação",
+    local: "Vitória, ES",
+    tipo: "formacao",
+    marcas: [
+      "TCC sobre a generalização de modelos de aprendizado de máquina entre domínios de imagens de lesões de pele, aprovado em 26 de fevereiro de 2026.",
+      "Comparação de ResNet-50, ResNet-101, MobileNetV3 e Vision Transformer sob domain shift entre fotos clínicas de celular e imagens dermatoscópicas.",
+      "A ResNet-101 foi a mais eficaz; a transferência direta entre domínios degrada o desempenho, e juntar as duas bases não trouxe ganho sobre os modelos especialistas.",
+    ],
+    stack: ["Aprendizado profundo", "Visão computacional", "ResNet", "Vision Transformer"],
+    link: { rotulo: "Ler o TCC (PDF)", href: "/tcc-hugo-otoch.pdf" },
   },
   {
     slug: "seer",
     inicio: "2025-08",
     fim: "2026-03",
-    periodo: "Ago 2025 – Mar 2026",
+    periodo: "Ago 2025 → Mar 2026",
     organizacao: "Seer",
     funcao: "Desenvolvedor Backend",
     local: "Remoto",
@@ -67,13 +84,12 @@ export const trajetoria: readonly Marco[] = [
       "Backend estruturado para grandes volumes, com foco em performance de consulta e integridade.",
     ],
     stack: ["Django", "ETL", "PostgreSQL"],
-    projeto: "dashboards-etl-django",
   },
   {
     slug: "labes-ufes",
     inicio: "2025-02",
     fim: "2026-01",
-    periodo: "Fev 2025 – Jan 2026",
+    periodo: "Fev 2025 → Jan 2026",
     organizacao: "LabES · UFES",
     funcao: "Full Stack · Projeto de extensão",
     local: "Vitória, ES",
@@ -84,13 +100,12 @@ export const trajetoria: readonly Marco[] = [
       "Foco técnico dentro do laboratório, orientando a arquitetura a partir de requisitos reais.",
     ],
     stack: ["Next.js", "Spring Boot", "Clean Code"],
-    projeto: "sigamaes-ufes",
   },
   {
     slug: "freelance-rpa-ia",
     inicio: "2024-01",
     fim: "2025-08",
-    periodo: "Jan 2024 – Ago 2025",
+    periodo: "Jan 2024 → Ago 2025",
     organizacao: "Autônomo",
     funcao: "Desenvolvedor RPA e IA",
     local: "Remoto",
@@ -100,13 +115,12 @@ export const trajetoria: readonly Marco[] = [
       "Automações de RPA com Selenium para coleta de dados em larga escala.",
     ],
     stack: ["LangChain", "LangGraph", "Selenium", "Python"],
-    projeto: "agentes-autonomos-langgraph",
   },
   {
     slug: "vixteam",
     inicio: "2022-06",
     fim: "2023-06",
-    periodo: "Jun 2022 – Jun 2023",
+    periodo: "Jun 2022 → Jun 2023",
     organizacao: "Vixteam",
     funcao: "Estágio · Desenvolvimento e análise de dados",
     local: "Vitória, ES",
@@ -117,89 +131,142 @@ export const trajetoria: readonly Marco[] = [
     ],
     stack: ["Power BI", "Python", "Angular", ".NET"],
   },
-  {
-    slug: "ufes",
-    inicio: "2026-02",
-    fim: "2026-02",
-    periodo: "Concluído em fev 2026",
-    organizacao: "UFES",
-    funcao: "Bacharelado em Engenharia de Computação",
-    local: "Vitória, ES",
-    tipo: "formacao",
-    marcas: ["Universidade Federal do Espírito Santo."],
-    stack: [],
-  },
 ] as const;
 
 /**
- * design.md §9.5 — Setor ARSENAL. Ordem proposital: o mais forte primeiro.
+ * design.md §9.6 — Setor ARSENAL. Ordem proposital: o mais forte primeiro.
+ *
+ * A FONTE E O CURRICULO (scripts/curriculo.mjs), nao os projetos: a secao
+ * Habilidades inteira, mais o que as experiencias citam pelo nome (Spring
+ * Boot, Power BI, Angular, Next.js). Tecnologia que so aparece na stack de
+ * um projeto nao entra aqui. Mudou o curriculo, mude aqui.
  *
  * v4: `IA & Agentes` subiu para o topo e `Frontend` desceu para o fim — a
  * ordem do arsenal e a ordem da candidatura.
- *
- * `nota` existe para dizer a profundidade sem inflar. Honestidade de nivel
- * evita entrevista ruim e, em vaga de pleno, conta a favor.
  */
-export const arsenal = [
+export type LinhaId = "ia" | "backend" | "dados" | "automacao" | "frontend";
+
+export type Linha = {
+  id: LinhaId;
+  /** Codigo da linha no mapa, como num metro de verdade. */
+  codigo: string;
+  grupo: string;
+  /**
+   * As estacoes NA ORDEM DO TRAJETO. Uma estacao que aparece em mais de uma
+   * linha e uma baldeacao e precisa estar em `baldeacoes`, com a experiencia
+   * que a prova. O desenho do mapa (components/sections/metro/rede.ts) depende
+   * desta ordem: mudou aqui, confira lá.
+   */
+  itens: readonly string[];
+};
+
+/**
+ * design.md §9.6 — o Arsenal virou um mapa de metro. Cada grupo e uma linha;
+ * a ordem das linhas continua sendo a ordem da candidatura.
+ */
+export const arsenal: readonly Linha[] = [
   {
+    id: "ia",
+    codigo: "L1",
     grupo: "IA & Agentes",
-    nota: "Onde eu trabalho hoje, todos os dias.",
     itens: [
+      "Python",
       "LangChain",
       "LangGraph",
-      "Agentes com tool use",
-      "Saída estruturada por schema",
-      "Engenharia de Prompt",
-      "Cache de prompt",
       "RAG",
-      "Anthropic Claude SDK",
-      "Google Gemini",
-      "Groq",
-      "OpenAI",
-      "NVIDIA NIM",
+      "Engenharia de Prompt",
+      "Integração de LLMs via API",
+      "OpenAI API",
+      "Evals de LLM",
+      "LLM-as-a-judge",
+      "Cache de prompt",
+      "Celery",
     ],
   },
   {
+    id: "backend",
+    codigo: "L2",
     grupo: "Backend & arquitetura",
-    nota: "A base que sustenta tudo acima.",
     itens: [
       "Python",
       "Django",
-      "Django REST Framework",
+      "PostgreSQL",
       "Flask",
-      "Celery",
-      "RabbitMQ",
-      "Clean Architecture",
+      "Django REST Framework",
+      "Arquitetura Limpa",
       "Design Patterns",
       "Pytest",
       "Spring Boot",
+      "RabbitMQ",
+      "Celery",
     ],
   },
   {
+    id: "dados",
+    codigo: "L3",
     grupo: "Dados & infra",
-    nota: "Entrego o que construo rodando, não em branch.",
     itens: [
       "PostgreSQL",
       "MSSQL",
-      "SQLite",
       "Redis",
       "Processos de ETL",
       "Docker",
-      "GitHub Actions",
       "Git",
+      "GitHub Actions",
       "Swagger/OpenAPI",
-      "VPS Linux · systemd",
       "Power BI",
     ],
   },
   {
+    id: "automacao",
+    codigo: "L4",
     grupo: "Automação / RPA",
-    nota: "De onde eu vim para a IA.",
-    itens: ["Selenium", "Playwright", "n8n", "Make"],
+    itens: ["Python", "Selenium", "Playwright", "n8n", "Make"],
   },
   {
+    id: "frontend",
+    codigo: "L5",
     grupo: "Frontend",
-    nota: "O suficiente para entregar inteira a interface do que eu construo.",
-    itens: ["React", "TypeScript", "Next.js", "Tailwind CSS", "Vite", "Angular"],
+    itens: ["Spring Boot", "Next.js", "Angular"],
   },
-] as const;
+];
+
+export type Baldeacao = {
+  estacao: string;
+  linhas: readonly LinhaId[];
+  /** Slug do marco em `trajetoria` (a experiencia do curriculo) onde as linhas rodaram juntas. */
+  prova: string;
+  /** Uma linha, verificavel no curriculo. */
+  porque: string;
+};
+
+/**
+ * Onde uma linha cruza a outra. Regra do §17: baldeacao sem experiencia do
+ * curriculo que a prove nao entra — e por isso que sao so quatro.
+ */
+export const baldeacoes: readonly Baldeacao[] = [
+  {
+    estacao: "Python",
+    linhas: ["backend", "ia", "automacao"],
+    prova: "freelance-rpa-ia",
+    porque: "Como autônomo: agentes em LangChain e LangGraph e RPA com Selenium no mesmo período.",
+  },
+  {
+    estacao: "Celery",
+    linhas: ["backend", "ia"],
+    prova: "tech-solutio",
+    porque: "Na Tech Solutio, a IA que conduz a negociação roda em fluxos assíncronos com Celery.",
+  },
+  {
+    estacao: "PostgreSQL",
+    linhas: ["backend", "dados"],
+    prova: "seer",
+    porque: "Na Seer, APIs em Django e processos de ETL sobre PostgreSQL.",
+  },
+  {
+    estacao: "Spring Boot",
+    linhas: ["backend", "frontend"],
+    prova: "labes-ufes",
+    porque: "No SigAMAES, backend em Spring Boot integrado ao frontend em Next.js.",
+  },
+];

@@ -1,29 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { trajetoria, type Marco, type TipoMarco } from "@/content/percurso";
 import { cn } from "@/lib/utils";
 
 /**
- * Setor 05 — a trilha da trajetoria acompanha a rolagem.
+ * Setor 03 — a trajetória acompanha a rolagem.
  *
- * Herda o mecanismo do antigo ProcessoTrilha: uma linha de leitura fica a 60%
- * da altura da tela, a trilha preenche ate ela com um ponto de luz na ponta, e
- * cada marco acende quando o preenchimento alcanca o seu marcador. O de agora
- * brilha, os de tras ficam acesos, os da frente esperam apagados. Rolando de
- * volta, apagam na mesma ordem.
+ * Uma linha de leitura fica a 60% da altura da tela; a trilha central preenche
+ * até ela, com um ponto de luz na ponta. Cada marco tem o título de um lado da
+ * trilha e os feitos do outro, como lâmpadas: o marco acende quando a trilha
+ * alcança o seu marcador, e cada lâmpada acende quando a linha de leitura passa
+ * por ela. Rolando de volta, apagam na mesma ordem.
  *
- * O preenchimento vai por variavel CSS (sem re-render a cada quadro); so a
- * troca de marco passa pelo estado. Transicoes em globals.css (`.marco-*`).
+ * Os períodos se sobrepõem de verdade (o SigAMAES rodou junto com a Seer e com
+ * o trabalho autônomo). Uma trilha só, em sequência, faria parecer que uma coisa
+ * terminou quando a outra começou, então cada marco diz com quem correu em
+ * paralelo, com link para o outro marco.
  *
- * O que e novo: DOIS TRILHOS. Os periodos se sobrepoem de verdade (SigAMAES
- * roda dentro da Seer; o freelance cobre o inicio do SigAMAES), e uma linha
- * unica em sequencia faria parecer que uma coisa terminou quando a outra
- * comecou. Emprego fica de um lado, autoral/academico/formacao do outro, e a
- * sobreposicao passa a ser o argumento: trabalho e lideranca tecnica ao mesmo
- * tempo. No celular os dois trilhos viram um, porque duas colunas nao cabem.
+ * O preenchimento e as lâmpadas vão por variável CSS e atributo, sem re-render
+ * a cada quadro; só a troca de marco passa pelo estado. Visual em globals.css
+ * (`.marco-*`).
  */
 
 const LINHA_DE_LEITURA = 0.6;
@@ -31,56 +29,45 @@ const LINHA_DE_LEITURA = 0.6;
 const FOLGA = 8;
 /** Distância do topo do item até o centro do marcador. */
 const CENTRO_MARCADOR = 14;
+/** Distância do topo de uma lâmpada até o seu centro. */
+const CENTRO_LUZ = 10;
 
-type Tema = {
-  /** Lado do trilho em telas largas. */
-  lado: "esquerda" | "direita";
-  rgb: string;
-  cor: string;
-  texto: string;
-  rotulo: string;
-};
+type Tema = { rgb: string; cor: string; texto: string; rotulo: string };
 
 const TEMA: Record<TipoMarco, Tema> = {
-  emprego: {
-    lado: "esquerda",
-    rgb: "255, 45, 143",
-    cor: "var(--color-magenta)",
-    texto: "text-magenta",
-    rotulo: "Emprego",
-  },
-  autoral: {
-    lado: "direita",
-    rgb: "255, 51, 85",
-    cor: "var(--color-crimson)",
-    texto: "text-crimson",
-    rotulo: "Autoral",
-  },
-  academico: {
-    lado: "direita",
-    rgb: "177, 75, 255",
-    cor: "var(--color-violet)",
-    texto: "text-violet",
-    rotulo: "Acadêmico",
-  },
-  formacao: {
-    lado: "direita",
-    rgb: "177, 75, 255",
-    cor: "var(--color-violet)",
-    texto: "text-violet",
-    rotulo: "Formação",
-  },
+  emprego: { rgb: "255, 45, 143", cor: "var(--color-magenta)", texto: "text-magenta", rotulo: "Emprego" },
+  autoral: { rgb: "255, 51, 85", cor: "var(--color-crimson)", texto: "text-crimson", rotulo: "Autoral" },
+  academico: { rgb: "177, 75, 255", cor: "var(--color-violet)", texto: "text-violet", rotulo: "Acadêmico" },
+  formacao: { rgb: "43, 245, 255", cor: "var(--color-cyan)", texto: "text-cyan", rotulo: "Formação" },
 };
 
-/** "YYYY-MM" em meses absolutos, para medir duração. */
+/** "YYYY-MM" em meses absolutos. */
 function emMeses(iso: string) {
   const [ano, mes] = iso.split("-").map(Number);
   return ano * 12 + (mes - 1);
 }
 
+/** Intervalo do marco em meses absolutos, com o fim inclusivo. */
+function intervalo(marco: Marco, agora: number): [number, number] {
+  return [emMeses(marco.inicio), marco.fim ? emMeses(marco.fim) : agora];
+}
+
 function duracaoEmMeses(marco: Marco, agora: number) {
-  const fim = marco.fim ? emMeses(marco.fim) : agora;
-  return Math.max(1, fim - emMeses(marco.inicio));
+  const [inicio, fim] = intervalo(marco, agora);
+  return Math.max(1, fim - inicio);
+}
+
+/** A formação é um marco pontual: não conta como trabalho em paralelo. */
+const conta = (marco: Marco) => marco.tipo !== "formacao";
+
+function paralelos(marco: Marco, agora: number) {
+  if (!conta(marco)) return [];
+  const [a0, a1] = intervalo(marco, agora);
+  return trajetoria.filter((outro) => {
+    if (outro.slug === marco.slug || !conta(outro)) return false;
+    const [b0, b1] = intervalo(outro, agora);
+    return a0 < b1 && b0 < a1;
+  });
 }
 
 export function Trajetoria() {
@@ -92,12 +79,13 @@ export function Trajetoria() {
   useEffect(() => {
     const el = lista.current;
     if (!el) return;
+    const luzes = [...el.querySelectorAll<HTMLElement>("[data-luz]")];
 
-    // Os dois setAlcancado deste efeito passam por requestAnimationFrame de
-    // proposito: chamar setState direto no corpo do efeito dispara render em
-    // cascata (react-hooks/set-state-in-effect).
+    // Os setAlcancado deste efeito passam por requestAnimationFrame de
+    // propósito: setState direto no corpo do efeito dispara render em cascata.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       el.style.setProperty("--progresso", "1");
+      luzes.forEach((luz) => luz.setAttribute("data-acesa", ""));
       const quadro = requestAnimationFrame(() => setAlcancado(trajetoria.length - 1));
       return () => cancelAnimationFrame(quadro);
     }
@@ -118,6 +106,13 @@ export function Trajetoria() {
         if (item && item.offsetTop + CENTRO_MARCADOR <= ponta + 1) ultimo = i;
       });
       setAlcancado(ultimo);
+
+      // Cada lâmpada acende quando a linha de leitura chega na altura dela.
+      const linha = window.innerHeight * LINHA_DE_LEITURA;
+      for (const luz of luzes) {
+        const acesa = luz.getBoundingClientRect().top + CENTRO_LUZ <= linha;
+        if (acesa !== luz.hasAttribute("data-acesa")) luz.toggleAttribute("data-acesa", acesa);
+      }
     };
 
     const aoRolar = () => {
@@ -136,38 +131,17 @@ export function Trajetoria() {
     };
   }, []);
 
-  // Escala das barras de duração: o marco mais longo ocupa a barra inteira.
   const agora = emMeses(new Date().toISOString().slice(0, 7));
-  const maiorDuracao = Math.max(...trajetoria.map((m) => duracaoEmMeses(m, agora)));
 
   return (
     <>
-      {/* Legenda dos dois trilhos */}
-      <ul className="mt-(--spacing-bloco) flex flex-wrap items-center gap-x-7 gap-y-3">
-        {(["emprego", "autoral", "academico", "formacao"] as const).map((tipo) => (
-          <li key={tipo} className="flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="size-1.5 rounded-full"
-              style={{ background: TEMA[tipo].cor }}
-            />
-            <span className="font-mono text-[0.68rem] tracking-[0.16em] text-text-mute uppercase">
-              {TEMA[tipo].rotulo}
-            </span>
-          </li>
-        ))}
-      </ul>
-
       <ol
         ref={lista}
-        className="relative mt-10 pl-10 md:mx-auto md:max-w-[var(--container-site)] md:pl-0"
+        className="relative mt-(--spacing-bloco) pl-10 md:pl-0"
         style={{ "--progresso": 0 } as React.CSSProperties}
       >
         {/* Trilha: encostada à esquerda no celular, no centro em telas largas */}
-        <span
-          aria-hidden="true"
-          className="absolute top-2 bottom-2 left-[7px] w-px bg-hairline md:left-1/2"
-        />
+        <span aria-hidden="true" className="absolute top-2 bottom-2 left-[7px] w-px bg-hairline md:left-1/2" />
         <span
           aria-hidden="true"
           className="absolute top-2 bottom-2 left-[7px] w-px origin-top scale-y-(--progresso) md:left-1/2"
@@ -184,56 +158,40 @@ export function Trajetoria() {
         {trajetoria.map((marco, i) => {
           const estado = i < alcancado ? "feita" : i === alcancado ? "atual" : "vem";
           const tema = TEMA[marco.tipo];
-          const esquerda = tema.lado === "esquerda";
           const meses = duracaoEmMeses(marco, agora);
           const atual = marco.fim === null;
+          const juntos = paralelos(marco, agora);
 
           return (
             <li
               key={marco.slug}
+              id={`marco-${marco.slug}`}
               ref={(item) => {
                 itens.current[i] = item;
               }}
               data-estado={estado}
-              className="marco relative pb-14 last:pb-0"
-              style={
-                {
-                  "--marco-cor": tema.cor,
-                  "--marco-rgb": tema.rgb,
-                } as React.CSSProperties
-              }
+              className="marco relative scroll-mt-28 pb-20 last:pb-0 md:grid md:grid-cols-[minmax(0,1fr)_5rem_minmax(0,1fr)]"
+              style={{ "--marco-cor": tema.cor, "--marco-rgb": tema.rgb } as React.CSSProperties}
             >
               {/* Marcador, sempre encostado na trilha */}
               <span
                 aria-hidden="true"
                 className="marco-marcador absolute top-1.5 -left-10 z-1 grid size-[15px] place-items-center rounded-full border border-hairline-hi bg-void md:left-1/2 md:size-[23px] md:-translate-x-1/2"
               >
-                <span
-                  className="marco-miolo size-1.5 rounded-full"
-                  style={{ background: tema.cor }}
-                />
+                <span className="marco-miolo size-1.5 rounded-full" style={{ background: tema.cor }} />
               </span>
 
-              <div
-                className={cn(
-                  "marco-corpo md:w-[calc(50%-3.5rem)]",
-                  esquerda ? "md:mr-auto md:text-right" : "md:ml-auto",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex flex-wrap items-center gap-x-3 gap-y-2",
-                    esquerda && "md:justify-end",
-                  )}
-                >
+              {/* Lado do título */}
+              <div className="marco-corpo md:col-start-1 md:text-right">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:justify-end">
+                  <span className={cn("font-mono text-[0.6rem] tracking-[0.18em] uppercase", tema.texto)}>
+                    {tema.rotulo}
+                  </span>
                   <span className="marco-periodo font-mono text-xs tracking-[0.1em] text-text-mute tabular-nums">
                     {marco.periodo}
                   </span>
                   {atual && (
-                    <span
-                      className="font-mono text-[0.6rem] tracking-[0.18em] uppercase"
-                      style={{ color: tema.cor }}
-                    >
+                    <span className={cn("font-mono text-[0.6rem] tracking-[0.18em] uppercase", tema.texto)}>
                       ● agora
                     </span>
                   )}
@@ -242,40 +200,36 @@ export function Trajetoria() {
                 <h3 className="mt-3 text-[length:var(--text-step-2)]">{marco.funcao}</h3>
                 <p className="mt-1.5 font-mono text-xs tracking-[0.08em] text-text-dim">
                   {marco.organizacao} · {marco.local}
+                  {marco.tipo !== "formacao" && (
+                    <span className="text-text-mute">
+                      {" "}
+                      · {meses} {meses === 1 ? "mês" : "meses"}
+                    </span>
+                  )}
                 </p>
 
-                {/* Barra de duração: mostra o tamanho real do período e deixa a
-                    sobreposição entre os dois trilhos visível. */}
-                <div
-                  aria-hidden="true"
-                  className={cn("mt-4 flex items-center gap-3", esquerda && "md:flex-row-reverse")}
-                >
-                  <span className="h-px w-full max-w-28 overflow-hidden">
-                    <span
-                      className="marco-duracao block h-px"
-                      style={{ width: `${(meses / maiorDuracao) * 100}%` }}
-                    />
-                  </span>
-                  <span className="font-mono text-[0.6rem] tracking-[0.14em] text-text-mute whitespace-nowrap uppercase tabular-nums">
-                    {meses} {meses === 1 ? "mês" : "meses"}
-                  </span>
-                </div>
-
-                <ul className={cn("mt-5 space-y-2.5", esquerda && "md:text-right")}>
-                  {marco.marcas.map((marca) => (
-                    <li key={marca} className="text-sm text-text">
-                      {marca}
-                    </li>
-                  ))}
-                </ul>
+                {juntos.length > 0 && (
+                  <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-[0.62rem] tracking-[0.12em] text-text-mute uppercase md:justify-end">
+                    <span>Em paralelo com</span>
+                    {juntos.map((outro) => (
+                      <a
+                        key={outro.slug}
+                        href={`#marco-${outro.slug}`}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2 py-0.5 text-text-dim transition-colors hover:border-hairline-hi hover:text-text"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="size-1.5 rounded-full"
+                          style={{ background: TEMA[outro.tipo].cor }}
+                        />
+                        {outro.organizacao}
+                      </a>
+                    ))}
+                  </p>
+                )}
 
                 {marco.stack.length > 0 && (
-                  <ul
-                    className={cn(
-                      "mt-5 flex flex-wrap gap-x-2 gap-y-2",
-                      esquerda && "md:justify-end",
-                    )}
-                  >
+                  <ul className="mt-5 flex flex-wrap gap-x-2 gap-y-2 md:justify-end">
                     {marco.stack.map((item) => (
                       <li
                         key={item}
@@ -286,16 +240,33 @@ export function Trajetoria() {
                     ))}
                   </ul>
                 )}
+              </div>
 
-                {marco.projeto && (
-                  <Link
-                    href={`/projetos/${marco.projeto}`}
-                    className="mt-5 inline-flex items-center gap-2 font-mono text-[0.68rem] tracking-[0.14em] uppercase transition-colors hover:text-text"
-                    style={{ color: tema.cor }}
+              {/* Lado das luzes */}
+              <div className="mt-6 md:col-start-3 md:mt-1">
+                <ul className="space-y-4">
+                  {marco.marcas.map((marca) => (
+                    <li key={marca} data-luz="" className="marco-luz flex gap-3.5 text-sm leading-relaxed">
+                      <span aria-hidden="true" className="marco-lampada mt-[0.4rem] size-2 shrink-0 rounded-full" />
+                      <span className="marco-luz-texto">{marca}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {marco.link && (
+                  <a
+                    href={marco.link.href}
+                    target="_blank"
+                    rel="noopener"
+                    className={cn(
+                      "mt-6 inline-flex items-center gap-2 font-mono text-[0.68rem] font-semibold tracking-[0.14em] uppercase underline-offset-[6px] hover:underline",
+                      tema.texto,
+                    )}
                   >
-                    Ver o projeto
-                    <span aria-hidden="true">→</span>
-                  </Link>
+                    {marco.link.rotulo}
+                    <span aria-hidden="true">↗</span>
+                    <span className="sr-only"> (abre em nova aba)</span>
+                  </a>
                 )}
               </div>
             </li>

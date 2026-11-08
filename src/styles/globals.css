@@ -19,7 +19,10 @@
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    /* clip, não hidden: hidden transforma o body num contêiner de rolagem
+       que nunca rola, e as view-timelines do cenário (que procuram o
+       contêiner de rolagem mais próximo) ficariam paradas. */
+    overflow-x: clip;
   }
 
   h1,
@@ -223,17 +226,6 @@
   }
 }
 
-/* Janelas acesas do skyline */
-@keyframes window-blink {
-  0%,
-  100% {
-    opacity: 0.85;
-  }
-  50% {
-    opacity: 0.15;
-  }
-}
-
 /* Indicador de scroll */
 @keyframes scroll-dot {
   0% {
@@ -327,9 +319,51 @@
   color: var(--marco-cor);
 }
 
-/* Barra de duracao: comprimento proporcional aos meses do marco. */
-.marco-duracao {
-  background: linear-gradient(90deg, rgba(var(--marco-rgb), 0.55), rgba(var(--marco-rgb), 0.08));
+/* Lâmpadas: cada feito do marco acende quando a linha de leitura passa por
+   ele. Apagada é só o contorno; acesa ganha a cor do marco, brilho e um
+   tremor rápido de lâmpada pegando. */
+.marco-lampada {
+  border: 1px solid var(--color-hairline-hi);
+  background: transparent;
+  transition:
+    background-color var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out);
+}
+
+.marco-luz-texto {
+  color: var(--color-text-mute);
+  opacity: 0.55;
+  transition:
+    color var(--dur-slow) var(--ease-out),
+    opacity var(--dur-slow) var(--ease-out);
+}
+
+.marco-luz[data-acesa] .marco-lampada {
+  border-color: var(--marco-cor);
+  background: var(--marco-cor);
+  box-shadow:
+    0 0 6px rgba(var(--marco-rgb), 0.9),
+    0 0 18px rgba(var(--marco-rgb), 0.45);
+  animation: lampada-pega 520ms steps(1, end) both;
+}
+
+.marco-luz[data-acesa] .marco-luz-texto {
+  color: var(--color-text);
+  opacity: 1;
+}
+
+@keyframes lampada-pega {
+  0%,
+  30%,
+  60%,
+  100% {
+    opacity: 1;
+  }
+  15%,
+  45% {
+    opacity: 0.25;
+  }
 }
 
 .marco-cursor {
@@ -342,10 +376,16 @@
 @media (scripting: none) {
   .marco .marco-corpo,
   .marco .marco-marcador,
-  .marco .marco-miolo {
+  .marco .marco-miolo,
+  .marco .marco-luz-texto {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
+  }
+
+  .marco .marco-lampada {
+    background: var(--marco-cor);
+    border-color: var(--marco-cor);
   }
 
   .marco-cursor {
@@ -382,56 +422,752 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   Setor 02 — vitrine rolada
-   data-estado: "vem" (abaixo) → "ativo" → "saiu" (acima). Rolando de
-   volta o caminho inverte sozinho. Quem sai vai rapido e sem cascata;
-   quem entra espera a saida e sobe em degraus (--ordem).
+   Cenário contínuo — <Cenario>, atrás da home inteira
+   A mesma rua da TV, fixa na janela. Cada seção publica uma
+   view-timeline; o cenário lê essas linhas (timeline-scope no html)
+   para entrar quando o hero sai, puxar o foco na TV e acender a luz
+   de cada seção. Sem suporte a scroll-driven: só a placa longe.
    ────────────────────────────────────────────────────────────────── */
 
-.vitrine-aparelho,
-.vitrine-ficha > * {
+html {
+  timeline-scope: --cena-inicio, --cena-atuacao, --cena-projetos, --cena-trajetoria,
+    --cena-arsenal, --cena-sobre, --cena-contato;
+}
+
+#inicio { view-timeline: --cena-inicio block; }
+#atuacao { view-timeline: --cena-atuacao block; }
+#projetos { view-timeline: --cena-projetos block; }
+#trajetoria { view-timeline: --cena-trajetoria block; }
+#arsenal { view-timeline: --cena-arsenal block; }
+#sobre { view-timeline: --cena-sobre block; }
+#contato { view-timeline: --cena-contato block; }
+
+.cenario {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cenario > * {
+  position: absolute;
+  inset: 0;
+}
+
+.cenario-placa {
+  background-position: center 40%;
+  background-size: cover;
+}
+
+.cenario-placa--longe {
+  background-image: url("/cenario/rua-longe.webp");
+}
+
+.cenario-placa--perto {
+  background-image: url("/cenario/rua-perto.webp");
+  opacity: 0;
+}
+
+/* Luz de neon da seção: uma mancha na lateral, na cor do setor. */
+.cenario-luz {
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 55% 60% at var(--luz-x, 15%) var(--luz-y, 55%),
+    var(--luz-cor),
+    transparent 70%
+  );
+}
+
+.cenario-luz--atuacao { --luz-cor: rgba(255, 45, 143, 0.22); --luz-x: 8%; }
+.cenario-luz--projetos { --luz-cor: rgba(177, 75, 255, 0.2); --luz-x: 50%; --luz-y: 70%; }
+.cenario-luz--trajetoria { --luz-cor: rgba(177, 75, 255, 0.22); --luz-x: 92%; }
+.cenario-luz--arsenal { --luz-cor: rgba(43, 245, 255, 0.14); --luz-x: 8%; }
+.cenario-luz--sobre { --luz-cor: rgba(255, 159, 74, 0.16); --luz-x: 92%; --luz-y: 35%; }
+.cenario-luz--contato { --luz-cor: rgba(255, 45, 143, 0.2); --luz-x: 50%; --luz-y: 95%; }
+
+/* Véu: segura o contraste do texto (a rua fica em ~25% do brilho) e
+   escurece as bordas como uma vinheta de lente. */
+.cenario-veu {
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 45%, transparent 35%, rgba(7, 6, 13, 0.7) 100%),
+    rgba(7, 6, 13, 0.62);
+}
+
+@supports (animation-timeline: view()) {
+  /* Entra quando o hero sai: o fundo do hero termina em void, sem emenda. */
+  .cenario {
+    animation: cenario-entra linear both;
+    animation-timeline: --cena-inicio;
+    animation-range: exit 0% exit 100%;
+  }
+
+  /* Foco puxado: nítida enquanto a TV passa, desfocada antes e depois. */
+  .cenario-placa--perto {
+    animation: cenario-foco linear both;
+    animation-timeline: --cena-projetos;
+    animation-range: entry 0% exit 100%;
+  }
+
+  .cenario-luz {
+    animation: cenario-luz linear both;
+    animation-range: entry 10% exit 90%;
+  }
+
+  .cenario-luz--atuacao { animation-timeline: --cena-atuacao; }
+  .cenario-luz--projetos { animation-timeline: --cena-projetos; }
+  .cenario-luz--trajetoria { animation-timeline: --cena-trajetoria; }
+  .cenario-luz--arsenal { animation-timeline: --cena-arsenal; }
+  .cenario-luz--sobre { animation-timeline: --cena-sobre; }
+  .cenario-luz--contato { animation-timeline: --cena-contato; }
+}
+
+@keyframes cenario-entra {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cenario-foco {
+  0%, 100% { opacity: 0; }
+  30%, 70% { opacity: 1; }
+}
+
+@keyframes cenario-luz {
+  0%, 100% { opacity: 0; }
+  35%, 65% { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Setor 02 — televisão
+   A TV é a foto public/tv.jpg (2752×1536). A .cena é a janela; a
+   .cena-placa é a foto inteira, maior que a janela e centrada num
+   ponto de foco, como um object-fit: cover com mira. A .tv-tela fica
+   sobre o tubo apagado da foto, em porcentagem da placa — medida
+   no próprio arquivo: tubo de x 878–1873 e y 461–1166, com 6px de
+   folga para dentro por causa da curva do vidro.
+
+   Na tela: linhas de varredura, vidro com vinheta e o chiado em
+   canvas. data-chiando liga o tranco na imagem e a faixa rolando.
+   Se trocar a foto, refaça as medidas da .tv-tela e as do aparelho
+   em .cena-ui (--tv-esq / --tv-dir).
+   ────────────────────────────────────────────────────────────────── */
+
+.cena {
+  position: relative;
+  overflow: hidden;
+  container-type: size;
+  /* Largura da placa e o ponto dela (0–1) que fica no centro da cena.
+     Unidades cq resolvem em quem usa a variável, ou seja, nos filhos. */
+  --placa-w: max(100cqw, 179.17cqh);
+  --foco-x: 0.5;
+  --foco-y: 0.5;
+  --esmaece: 12%;
+}
+
+/* Desktop: a cena é a janela inteira. A placa passa um pouco da largura
+   e anda para a direita (foco 0.44) para sobrar coluna para o texto. */
+.cena--palco {
+  height: 100%;
+  --placa-w: max(115cqw, 179.17cqh);
+  --foco-x: 0.44;
+}
+
+/* Lista: recorte em volta do aparelho, de borda a borda no celular. */
+.cena--solo {
+  aspect-ratio: 5 / 4;
+  margin-inline: calc(var(--spacing-gutter) * -1);
+  --placa-w: 185cqw;
+  --foco-x: 0.5025;
+  --foco-y: 0.56;
+  --esmaece: 6%;
+  /* Rolagem vertical fica com o navegador; o arrasto lateral troca o canal. */
+  touch-action: pan-y;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .cena--solo {
+    width: 100%;
+    max-width: 52rem;
+    margin-inline: auto;
+    border-radius: var(--radius-xl);
+  }
+}
+
+.cena-placa {
+  position: absolute;
+  left: calc(50% - var(--placa-w) * var(--foco-x));
+  top: calc(50% - var(--placa-w) * 0.5581 * var(--foco-y));
+  width: var(--placa-w);
+  aspect-ratio: 2752 / 1536;
+  container-type: inline-size;
+}
+
+/* A foto se dissolve no cenário contínuo (rua desfocada atrás do site)
+   em vez de bater numa borda. A máscara fica só na foto: o texto da cena
+   está fora dela e nunca esmaece. */
+.cena-fundo {
+  position: absolute;
+  inset: 0;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 var(--esmaece),
+    #000 calc(100% - var(--esmaece)),
+    transparent 100%
+  );
+}
+
+/* No celular a TV ocupa a largura toda: as laterais também dissolvem. */
+.cena--solo .cena-fundo {
+  mask-image:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      #000 var(--esmaece),
+      #000 calc(100% - var(--esmaece)),
+      transparent 100%
+    ),
+    linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* Palco: a esquerda escurece para o texto ler sobre o neon. */
+.cena--palco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(11, 10, 18, 0.88) 0%,
+    rgba(11, 10, 18, 0.6) 20%,
+    transparent 34%,
+    transparent 82%,
+    rgba(11, 10, 18, 0.55) 100%
+  );
+}
+
+/* Colunas em volta do aparelho. --tv-esq/--tv-dir: bordas do gabinete
+   da foto (x 26,4% e 74,1%) convertidas para a cena. */
+.cena-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  --tv-esq: calc(50cqw - var(--placa-w) * (var(--foco-x) - 0.264));
+  --tv-dir: calc(50cqw + var(--placa-w) * (0.741 - var(--foco-x)));
+}
+
+.cena-ui > * {
+  pointer-events: auto;
+}
+
+.cena-lado {
+  position: absolute;
+  top: 6.5rem;
+  bottom: 2.75rem;
+  left: var(--spacing-gutter);
+  width: min(30rem, calc(var(--tv-esq) - var(--spacing-gutter) - 2.5rem));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.cena-lado h2 {
+  font-size: clamp(2rem, 1rem + 2.4vw, 3.5rem);
+}
+
+.cena-lado .canal-ficha h3 {
+  font-size: var(--text-step-2);
+}
+
+.cena-lado .canal-ficha-resumo {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.cena-guia {
+  --guia-margem: clamp(1rem, 1.6vw, var(--spacing-gutter));
+  position: absolute;
+  right: var(--guia-margem);
+  bottom: 2.75rem;
+  width: max(8.5rem, min(17rem, calc(100cqw - var(--tv-dir) - var(--guia-margem) - 1rem)));
+}
+
+/* Número em cima, nome embaixo: a coluna da direita é estreita em 16:10. */
+.guia-canal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.55rem 0.8rem;
+  line-height: 1.35;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  background: rgba(11, 10, 18, 0.62);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+/* Controle do celular: canais lado a lado em colunas de ~6.5rem. */
+.guia-canal--compacto {
+  padding-inline: 0.6rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+.guia-canal-numero {
+  flex: none;
+  color: var(--color-text-mute);
+}
+
+.guia-canal:hover {
+  border-color: var(--color-magenta);
+  color: var(--color-text-hi);
+}
+
+.guia-canal[aria-pressed="true"] {
+  border-color: var(--color-cyan);
+  color: var(--color-text-hi);
+  box-shadow: 0 0 14px rgba(43, 245, 255, 0.18);
+}
+
+.guia-canal[aria-pressed="true"] .guia-canal-numero {
+  color: var(--color-cyan);
+}
+
+/* O tubo da foto. Unidades cqw aqui são da placa (1cqw = 1% da foto),
+   então canto, brilho e vinheta crescem junto com a TV. */
+.tv-tela {
+  position: absolute;
+  left: 32.12%;
+  top: 30.34%;
+  width: 35.76%;
+  height: 45.25%;
+  overflow: hidden;
+  border-radius: 1.1cqw / 1.4cqw;
+  background: #050409;
+  /* A luz da tela respinga na moldura de plástico em volta. */
+  box-shadow: 0 0 3.2cqw 0.5cqw var(--tv-brilho);
+  isolation: isolate;
+  transition: box-shadow var(--dur-scene) var(--ease-out);
+}
+
+.tv-imagem {
+  position: absolute;
+  inset: 0;
+  transform: scale(1.012);
+}
+
+.tv-programa,
+.tv-quadro {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+/* O canal troca seco, escondido pelo chiado; as telas do canal cruzam. */
+.tv-programa[data-ativo] {
+  opacity: 1;
+}
+
+.tv-quadro {
+  transition: opacity 600ms var(--ease-out);
+}
+
+.tv-quadro[data-ativo] {
+  opacity: 1;
+}
+
+.tv-linhas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.26) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+.tv-osd {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 4.5% 5%;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  transition: opacity 120ms linear;
+}
+
+.tv-ao-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(7, 6, 13, 0.72);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-hi);
+}
+
+.tv-ao-vivo-ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-crimson);
+  box-shadow: 0 0 8px var(--color-crimson);
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+.tv-canal {
+  font-size: max(0.95rem, 1.5cqw);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan);
+  animation: tv-canal-entra 900ms steps(1, end) both;
+}
+
+/* O número do canal pisca ao sintonizar, como OSD de TV antiga. */
+@keyframes tv-canal-entra {
+  0%,
+  22%,
+  44%,
+  100% {
+    opacity: 1;
+  }
+  11%,
+  33% {
+    opacity: 0.15;
+  }
+}
+
+.tv-chiado {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms linear;
+}
+
+.tv-chiado[data-ligado] {
+  opacity: 0.94;
+  transition-duration: 40ms;
+}
+
+/* Faixa clara rolando de cima para baixo enquanto o sinal se perde */
+.tv-tela::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -25%;
+  z-index: 7;
+  height: 22%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.22) 45%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent
+  );
+}
+
+.tv-tela[data-chiando]::after {
+  opacity: 1;
+  animation: tv-rolo 280ms linear infinite;
+}
+
+.tv-tela[data-chiando] .tv-imagem {
+  filter: contrast(1.7) brightness(1.35) saturate(0.25);
+  animation: tv-tranco 110ms steps(2, end) infinite;
+}
+
+.tv-tela[data-chiando] .tv-osd {
+  opacity: 0;
+}
+
+@keyframes tv-rolo {
+  from {
+    top: -25%;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes tv-tranco {
+  0% {
+    transform: translate(-2%, 0) skewX(5deg) scale(1.06);
+  }
+  50% {
+    transform: translate(2.5%, -3%) skewX(-4deg) scale(1.06);
+  }
+  100% {
+    transform: translate(0, 4%) scale(1.06);
+  }
+}
+
+/* Vidro: vinheta de tubo e um reflexo no canto de cima */
+.tv-vidro {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 85% at 22% 0%, rgba(255, 255, 255, 0.07), transparent 42%);
+  box-shadow:
+    inset 0 0 3cqw 0.6cqw rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* ── Energia ─────────────────────────────────────────────────────────
+   Desligar é o colapso de tubo: a imagem achata numa linha clara,
+   a linha vira um ponto e o ponto apaga. Ligar faz o caminho de volta.
+   data-mudou impede a animação de ligar no carregamento da página. */
+
+.tv-sinal {
+  position: absolute;
+  inset: 0;
+  transform-origin: center;
+}
+
+.tv-tela[data-energia="desligada"] {
+  box-shadow: none;
+}
+
+.tv-tela[data-energia="desligada"] .tv-sinal {
+  animation: tv-desliga 460ms cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+}
+
+.tv-tela[data-energia="ligada"][data-mudou] .tv-sinal {
+  animation: tv-liga 560ms cubic-bezier(0.1, 0.6, 0.3, 1) both;
+}
+
+/* O ponto residual que fica um instante no meio do tubo apagado */
+.tv-tela::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 9;
+  width: 0.9cqw;
+  height: 0.9cqw;
+  border-radius: 999px;
+  translate: -50% -50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle, #fff 0 30%, rgba(200, 235, 255, 0.6) 55%, transparent 72%);
+}
+
+.tv-tela[data-energia="desligada"]::before {
+  animation: tv-ponto 1100ms ease-out 300ms both;
+}
+
+.tv-tela[data-energia="desligada"]::after {
+  opacity: 0;
+}
+
+@keyframes tv-desliga {
+  0% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+    opacity: 1;
+  }
+  55% {
+    transform: scale(1, 0.006);
+    filter: brightness(4) saturate(0);
+    opacity: 1;
+  }
+  85% {
+    transform: scale(0.012, 0.006);
+    filter: brightness(6) saturate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes tv-liga {
+  0% {
+    transform: scale(0.012, 0.006);
+    filter: brightness(6) saturate(0);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1, 0.006);
+    filter: brightness(4) saturate(0);
+  }
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes tv-ponto {
+  0% {
+    opacity: 1;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+
+/* Botão de energia da foto: o quadrado ao lado do LED (centro x 1801,
+   y 1276, ~42px de lado). A área de toque passa do desenho: nunca menor
+   que 44px, mesmo no celular. */
+.tv-energia {
+  position: absolute;
+  left: 65.46%;
+  top: 83.1%;
+  z-index: 3;
+  width: max(2.75rem, 2.6cqw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 0.4cqw;
+  cursor: pointer;
+  background: transparent;
+}
+
+/* Contorno no lugar do botão desenhado: hover e foco mostram que ele aperta */
+.tv-energia::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(1.1rem, 1.6cqw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 0.3cqw;
+  box-shadow: 0 0 0 1px rgba(43, 245, 255, 0);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.tv-energia:hover::after {
+  box-shadow:
+    0 0 0 1px rgba(43, 245, 255, 0.55),
+    0 0 12px rgba(43, 245, 255, 0.35);
+}
+
+.tv-energia:focus-visible {
+  outline: none;
+}
+
+.tv-energia:focus-visible::after {
+  box-shadow:
+    0 0 0 2px var(--color-cyan),
+    0 0 14px rgba(43, 245, 255, 0.5);
+}
+
+.tv-energia:active::after {
+  scale: 0.85;
+}
+
+/* LED da foto (x 1758, y 1276): verde ligado, vermelho de espera desligado */
+.tv-led {
+  position: absolute;
+  left: 63.9%;
+  top: 83.07%;
+  z-index: 3;
+  width: 0.55cqw;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff6a6a 0 25%, #e0182c 55%, #5a0710 100%);
+  box-shadow: 0 0 1.1cqw 0.15cqw rgba(255, 40, 60, 0.75);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.tv-led[data-ligada] {
+  background: radial-gradient(circle, #c8ffe9 0 25%, var(--color-ok) 55%, #0b4a36 100%);
+  box-shadow: 0 0 0.9cqw 0.1cqw rgba(43, 245, 176, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-tela[data-chiando] .tv-imagem,
+  .tv-tela[data-chiando]::after {
+    animation: none;
+    filter: none;
+  }
+
+  .tv-chiado {
+    display: none;
+  }
+
+  /* Sem colapso de tubo: a imagem só some e volta. */
+  .tv-tela[data-energia] .tv-sinal,
+  .tv-tela[data-energia]::before {
+    animation: none;
+  }
+
+  .tv-tela[data-energia="desligada"] .tv-sinal {
+    opacity: 0;
+  }
+}
+
+/* Ficha do canal — data-estado: "vem" (abaixo) → "ativo" → "saiu" (acima).
+   Quem sai vai rapido e sem cascata; quem entra espera o chiado e sobe
+   em degraus (--ordem). */
+
+.canal-ficha > * {
   transition:
     opacity var(--dur-slow) var(--ease-out),
-    transform var(--dur-scene) var(--ease-out),
-    filter var(--dur-slow) var(--ease-out);
+    transform var(--dur-scene) var(--ease-out);
 }
 
-.vitrine-aparelho[data-estado="ativo"] {
-  transition-delay: 140ms;
-}
-
-.vitrine-aparelho[data-estado="vem"] {
-  opacity: 0;
-  transform: translateY(22%) scale(0.9) rotate(5deg);
-  filter: blur(6px);
-}
-
-.vitrine-aparelho[data-estado="saiu"] {
-  opacity: 0;
-  transform: translateY(-16%) scale(0.86) rotate(-5deg);
-  filter: blur(6px);
-}
-
-.vitrine-ficha[data-estado="ativo"] > * {
+.canal-ficha[data-estado="ativo"] > * {
   transition-delay: calc(200ms + var(--ordem, 0) * 70ms);
 }
 
-.vitrine-ficha:not([data-estado="ativo"]) > * {
+.canal-ficha:not([data-estado="ativo"]) > * {
   opacity: 0;
   transition-duration: var(--dur-base);
 }
 
-.vitrine-ficha[data-estado="vem"] > * {
+.canal-ficha[data-estado="vem"] > * {
   transform: translateY(36px);
 }
 
-.vitrine-ficha[data-estado="saiu"] > * {
+.canal-ficha[data-estado="saiu"] > * {
   transform: translateY(-28px);
 }
 
 @media (scripting: none) {
-  .vitrine-aparelho,
-  .vitrine-ficha > * {
+  .canal-ficha > * {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
@@ -574,6 +1310,88 @@
     opacity: 1;
     transform: none;
     filter: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Setor 04 — mapa de metro do Arsenal (design.md §9.6)
+   O trilho se desenha a velocidade constante a partir de Python; cada
+   estacao acende quando ele chega nela (--metro-atraso vem de
+   metro/rede.ts). Dados e Frontend so partem quando o Backend alcanca
+   a baldeacao deles.
+   ────────────────────────────────────────────────────────────────── */
+
+.metro-trilho {
+  stroke-dasharray: 1 1.05;
+  stroke-dashoffset: 1.02;
+  transition: stroke-dashoffset var(--metro-dur, 1200ms) linear
+    calc(var(--reveal-atraso, 0ms) + 200ms + var(--metro-atraso, 0ms));
+}
+
+[data-revelado="true"] .metro-trilho {
+  stroke-dashoffset: 0;
+}
+
+.metro-ponto {
+  opacity: 0;
+  transform: scale(0.2);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 520ms var(--ease-snap);
+  transition-delay: calc(200ms + var(--metro-atraso, 0ms));
+}
+
+.metro-texto {
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out) calc(320ms + var(--metro-atraso, 0ms));
+}
+
+[data-revelado="true"] .metro-ponto,
+[data-revelado="true"] .metro-texto {
+  opacity: 1;
+  transform: none;
+}
+
+/* Trens so aparecem depois que a rede acendeu */
+.metro-trem {
+  visibility: hidden;
+  filter: drop-shadow(0 0 4px rgba(255, 242, 249, 0.9));
+}
+
+[data-revelado="true"] .metro-trem {
+  visibility: visible;
+}
+
+/* Foco por linha: passar em qualquer peca de uma linha apaga as outras.
+   O alvo do opacity e sempre o grupo/wrapper, nunca .metro-ponto ou
+   .metro-texto — eles ja tem transition-delay de revelacao e o foco
+   herdaria segundos de atraso. */
+.metro-grupo,
+.metro-rotulo,
+.metro-placa,
+.metro-legenda,
+.metro [data-linhas] {
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.metro:has([data-linha="ia"]:hover) :is([data-linha]:not([data-linha="ia"]), [data-linhas]:not([data-linhas~="ia"])),
+.metro:has([data-linha="backend"]:hover) :is([data-linha]:not([data-linha="backend"]), [data-linhas]:not([data-linhas~="backend"])),
+.metro:has([data-linha="dados"]:hover) :is([data-linha]:not([data-linha="dados"]), [data-linhas]:not([data-linhas~="dados"])),
+.metro:has([data-linha="automacao"]:hover) :is([data-linha]:not([data-linha="automacao"]), [data-linhas]:not([data-linhas~="automacao"])),
+.metro:has([data-linha="frontend"]:hover) :is([data-linha]:not([data-linha="frontend"]), [data-linhas]:not([data-linhas~="frontend"])) {
+  opacity: 0.14;
+}
+
+@media (scripting: none) {
+  .metro-trilho {
+    stroke-dashoffset: 0;
+  }
+  .metro-ponto,
+  .metro-texto {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -1418,8 +2236,21 @@
 
   .varredura,
   .scanner,
-  .painel-liga {
+  .painel-liga,
+  .metro-trem {
     display: none !important;
+  }
+
+  /* O mapa nasce desenhado e aceso */
+  .metro-trilho {
+    stroke-dashoffset: 0 !important;
+    transition: none !important;
+  }
+  .metro-ponto,
+  .metro-texto {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 
   .lambe-cola {

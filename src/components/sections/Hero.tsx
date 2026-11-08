@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/Button";
 import { Hud } from "@/components/ui/Hud";
 import { Retrato } from "@/components/ui/Retrato";
 import { NomeNeon } from "@/components/ui/NomeNeon";
+import Image from "next/image";
 import { Fog } from "@/components/fx/Fog";
-import { Skyline } from "@/components/fx/Skyline";
 import { Rain } from "@/components/fx/Rain";
+import fotoRua from "../../../public/hero.jpg";
 
 const COR_SERVICO = {
   magenta: "text-magenta",
@@ -18,8 +19,8 @@ const COR_SERVICO = {
  *
  * O nome é o elemento display e o <h1>; a função desce para subtítulo.
  *
- * v4 — o hero virou cartão de identificação: título, recorte da especialidade,
- * nível e base ficam visíveis de imediato, e o par de botões leva à prova e ao
+ * v4 — o hero virou cartão de identificação: título e nível ficam visíveis
+ * de imediato, e o par de botões leva à prova e ao
  * currículo em PDF, porque recrutador quer o arquivo, não só a página.
  */
 export function Hero() {
@@ -29,13 +30,38 @@ export function Hero() {
       className="relative flex min-h-[100svh] flex-col overflow-hidden pt-20 pb-10 sm:pt-28"
     >
       {/* ── Cenario ──────────────────────────────────────────────────── */}
+      {/*
+        Foto da rua (public/hero.jpg). O contêiner sobra 8% acima
+        da seção porque o parallax (§14.2) empurra a camada para baixo ao rolar;
+        sem essa folga, aparecia uma faixa vazia no topo.
+      */}
+      <div
+        aria-hidden="true"
+        data-parallax=""
+        className="pointer-events-none absolute inset-x-0 -top-[8%] bottom-0"
+        style={{ zIndex: "var(--z-bg)", "--parallax": "7%" } as React.CSSProperties}
+      >
+        <Image
+          src={fotoRua}
+          alt=""
+          fill
+          preload
+          sizes="100vw"
+          placeholder="blur"
+          className="object-cover object-[50%_60%]"
+        />
+      </div>
+      {/* Véu de leitura: escurece a esquerda (nome) e o topo (nav) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
-        style={{ zIndex: "var(--z-bg)", background: "var(--grad-sky)" }}
+        style={{
+          zIndex: "var(--z-bg)",
+          background:
+            "linear-gradient(90deg, rgba(7,6,13,.7) 0%, rgba(7,6,13,.35) 45%, transparent 75%), linear-gradient(180deg, rgba(7,6,13,.6) 0%, transparent 25%)",
+        }}
       />
       <Fog />
-      <Skyline />
       <Rain />
       <div
         aria-hidden="true"
@@ -80,13 +106,6 @@ export function Hero() {
             >
               {site.titulo}
               <span className="text-text-dim"> · {site.nivel}</span>
-            </p>
-
-            <p
-              className="mt-3 max-w-[42ch] text-text-dim"
-              style={{ animation: "reveal-up var(--dur-slow) var(--ease-out) calc(var(--abertura) + 480ms) both" }}
-            >
-              {site.especialidade} · {site.baseCompleta}
             </p>
 
             <div

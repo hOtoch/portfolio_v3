@@ -109,7 +109,7 @@ const habilidades = [
   {
     grupo: "IA & Agentes",
     itens:
-      "Agentes de IA (LangChain, LangGraph), RAG, Engenharia de Prompt, Integração de LLMs via API, Saída estruturada por schema, Cache de prompt.",
+      "Agentes de IA (LangChain, LangGraph), RAG, Engenharia de Prompt, Integração de LLMs via API (OpenAI API), Evals de LLM (LLM-as-a-judge), Cache de prompt.",
   },
   {
     grupo: "Backend & Arquitetura",
@@ -208,7 +208,7 @@ function gerar() {
       Author: "Hugo Lima Otoch",
       Subject: "Engenheiro de IA",
       Keywords:
-        "Engenheiro de IA, AI Engineer, LangChain, LangGraph, RAG, LLM, Python, Django, Celery, Docker",
+        "Engenheiro de IA, AI Engineer, LangChain, LangGraph, RAG, LLM, Evals, Python, Django, Celery, Docker",
     },
   });
 
